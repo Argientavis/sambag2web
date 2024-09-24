@@ -12,7 +12,7 @@ const AnnualAnalytics = () => {
   const [data, setData] = useState([]);
 
   const fetchData = async () => {
-    const reportRef = ref(database, 'reports');
+    const reportRef = ref(database, 'led/reports');
 
     try {
       const reportSnapshot = await get(reportRef);
@@ -26,6 +26,7 @@ const AnnualAnalytics = () => {
           NOISE: 0,
           THIEF: 0,
           FIRE: 0,
+          ACCIDENT: 0,  // Add ACCIDENT here
         }));
 
         reportList.forEach(report => {
@@ -56,6 +57,7 @@ const AnnualAnalytics = () => {
   const noiseCounts = data.map(month => month.NOISE);
   const thiefCounts = data.map(month => month.THIEF);
   const fireCounts = data.map(month => month.FIRE);
+  const accidentCounts = data.map(month => month.ACCIDENT);  // Extract ACCIDENT counts
 
   const chartData = {
     labels: chartLabels,
@@ -84,6 +86,14 @@ const AnnualAnalytics = () => {
         fill: true,
         tension: 0.4,
       },
+      {
+        label: 'Accident',
+        data: accidentCounts,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: true,
+        tension: 0.4,
+      },
     ],
   };
 
@@ -98,7 +108,8 @@ const AnnualAnalytics = () => {
         formatter: (value, context) => {
           const total = noiseCounts.reduce((a, b) => a + b, 0) +
                         thiefCounts.reduce((a, b) => a + b, 0) +
-                        fireCounts.reduce((a, b) => a + b, 0);
+                        fireCounts.reduce((a, b) => a + b, 0) +
+                        accidentCounts.reduce((a, b) => a + b, 0);  // Include ACCIDENT in total
           const percentage = total ? ((value / total) * 100).toFixed(2) + '%' : '0%';
           return percentage;
         },

@@ -1,5 +1,5 @@
 
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { database, auth } from "../Firebase"; 
 import { ref, get, query, orderByChild, equalTo } from "firebase/database";
 import axios from "axios";
@@ -13,9 +13,21 @@ export const useAuthStore = create((set) => ({
     error: null,
     isLoading: false,
     role: null,
+    isCheckingAuth: false,
 
 
-
+    forForgotPass: async (email) => {
+        try {
+            await sendPasswordResetEmail(auth,email),{
+                url:'http://localhost:5173/reset-password',
+                handleCodeInApp:true                
+            }   
+            return { success: true };
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            return { success: false, error: error.message };
+        }
+    },
     checkingAuth: async () => {
         set({ isCheckingAuth: true, error: null });
         try {
@@ -58,7 +70,7 @@ export const useAuthStore = create((set) => ({
                 const userCredentials = await signInWithEmailAndPassword(auth, email, password);
                 const idToken = await userCredentials.user.getIdToken();
 
-                const response = await axios.post(`${API_URL}/login`, { idToken }, { withCredentials: true });
+                const response = await axios.post(`${API_URL}/login`, { idToken}, { withCredentials: true });
 
                 if (response.data.success) {
                     const role = Object.values(userData)[0].role;
@@ -68,6 +80,7 @@ export const useAuthStore = create((set) => ({
                         role,
                         error: null,
                         isLoading: false,
+                        isCheckingAuth: false
                     });
                     return { success: true, role, idToken };
                 } else {

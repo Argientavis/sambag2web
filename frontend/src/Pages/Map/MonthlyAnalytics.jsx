@@ -14,7 +14,7 @@ const MonthlyAnalytics = () => {
   const [currentYear, setCurrentYear] = useState(0);
 
   const fetchData = async () => {
-    const reportRef = ref(database, 'reports');
+    const reportRef = ref(database, 'led/reports');
 
     try {
       const reportSnapshot = await get(reportRef);
@@ -29,7 +29,7 @@ const MonthlyAnalytics = () => {
         setCurrentMonth(month);
         setCurrentYear(year);
 
-        const dailyCounts = Array(31).fill(0).map(() => ({ NOISE: 0, THIEF: 0, FIRE: 0 }));
+        const dailyCounts = Array(31).fill(0).map(() => ({ NOISE: 0, THIEF: 0, FIRE: 0, ACCIDENT: 0 }));
 
         reportList.forEach(report => {
           const reportDate = new Date(report.timestamp);
@@ -56,6 +56,7 @@ const MonthlyAnalytics = () => {
   const noiseCounts = data.map(day => day.NOISE);
   const thiefCounts = data.map(day => day.THIEF);
   const fireCounts = data.map(day => day.FIRE);
+  const accidentCounts = data.map(day => day.ACCIDENT);
 
   const chartData = {
     labels: chartLabels,
@@ -81,6 +82,14 @@ const MonthlyAnalytics = () => {
         data: fireCounts,
         borderColor: 'rgba(255, 206, 86, 1)',
         backgroundColor: 'rgba(255, 206, 86, 0.2)',
+        fill: true,
+        tension: 0.4,
+      },
+      {
+        label: 'Accident',
+        data: accidentCounts,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,
         tension: 0.4,
       },

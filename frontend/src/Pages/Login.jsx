@@ -3,7 +3,9 @@ import brgysambag from "../assets/backgroundImage.png";
 import alert from "../assets/alarm.png";
 import backgroundLogin from '../assets/backgroundLogin.png'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import forgotPassImage from '../assets/forgotPass.png'
 import layer from '../assets/2nd.png'
+
 import {
   faEye,
   faEyeSlash,
@@ -20,14 +22,16 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const { forLogin, isLoading, error, role } = useAuthStore();
+  const { forLogin, isLoading, error, role,forForgotPass } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     const result = await forLogin(username, password);
     if (result?.success) {
-      alert("Login Sucessfully");
+      alert('Login Sucessfully')
     } else {
       console.error(error);
     }
@@ -36,8 +40,17 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleForgotPassword = (e) => {
+  const resetPasswordHandler = async (e) => {
     e.preventDefault();
+  
+    const result = await forForgotPass(email);
+    if (result?.success) {
+      alert('Sent email for reset password successfully')
+      setEmail(''); 
+      setShowForgotPass(false); 
+    } else {
+      alert('Failed to send password reset email. Please try again.');
+    }
   };
 
   return (
@@ -51,14 +64,64 @@ const Login = () => {
         <div className="h-[90%] w-[60%] rounded-lg bg-[#FFF6F0] relative">
           <div className="flex justify-center"></div>
           {showForgotPass ? (
-            <></>
+            <>
+              <div className="flex">
+                <div className="w-2/3">
+                  <div className="flex flex-col justify-center items-center gap-2">
+                    <img className="h-[25vh] mt-2" src={forgotPassImage} alt="" />
+                    <div className="flex flex-col justify-center items-center font-bold text-[4vh]   text-[#163458]">
+                      <h1>Forgot Pass</h1>
+                      <h1 className="text-[10px] font-medium mt-3">Please enter your email. We will send you a link  to reset</h1>
+                      <h1 className="text-[10px] font-medium">your password</h1>
+                    </div>
+                    <form name="login">
+                      <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
+                        {/*Username*/}
+                        <label className="font-bold" htmlFor="email">
+                          Email:
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
+                            <FontAwesomeIcon icon={faEnvelope} />
+                          </div>
+                          <input
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
+                            type="text"
+                            placeholder="Enter Email"
+                            className="ps-8 rounded-lg w-[25vw] py-2 border"
+                          />
+                        </div>
+
+                        <div className="text-[12px] flex justify-end">
+                          <button className="text-[#2203AC] underline" onClick={()=>setShowForgotPass(false)}>Log in</button>
+                        </div>
+                        <div className="flex justify-center items-center mt-[6%] text-white">
+                          <button
+                            onClick={resetPasswordHandler}
+                            className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                {/*The Background*/}
+                <div>
+                  <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <div className="flex">
                 <div className="w-2/3">
                   <div className="flex flex-col justify-center items-center gap-2">
                     <img className="h-[25vh] mt-2" src={alert} alt="" />
-                    <div className="flex flex-col justify-center items-center font-bold text-[3vh]   text-[#163458]">
+                    <div className="flex flex-col justify-center items-center font-bold text-[4vh]   text-[#163458]">
                       <h1>Welcome to Sambag 2</h1>
                       <h1>Emergency Alert</h1>
                     </div>
@@ -79,20 +142,20 @@ const Login = () => {
                             name="username"
                             id="username"
                             placeholder="Enter Username"
-                            className="ps-6 rounded-lg w-[25vw] py-1 border"
+                            className="ps-8 rounded-lg w-[25vw] py-2 border"
                           />
                         </div>
 
                         {/*Password*/}
                         <div className="mt-4">
                           <label className="font-bold" htmlFor="password">
-                            Password
+                            Password:
                           </label>
                           <div className="relative">
                             <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                               <FontAwesomeIcon icon={faLock} />
                             </div>
-                            <div className="absolute end-2   top-1/2 transofrm -translate-y-1/2 z-20">
+                            <div className="absolute end-2  right-5 top-1/2 transofrm -translate-y-1/2 z-20">
                               <FontAwesomeIcon
                                 onClick={() => setShowPassword(!showPassword)}
                                 icon={showPassword ? faEyeSlash : faEye}
@@ -104,13 +167,13 @@ const Login = () => {
                               onChange={(e)=>setPassword(e.target.value)}
                               value={password}
                               type={showPassword ? "text" : "password"}
-                              className="ps-6 rounded-lg w-[25vw] py-1 border"
+                              className="ps-8 rounded-lg w-[25vw] py-2 border"
                               placeholder="Enter Password"
                             />
                           </div>
                         </div>
                         <div className="text-[12px] flex justify-end">
-                          <button className="text-[#2203AC] underline">Forgot Password</button>
+                          <button onClick={(e)=>setShowForgotPass(true,e.preventDefault())} className="text-[#2203AC] underline">Forgot Password</button>
                         </div>
                         <div className="flex justify-center items-center mt-[6%] text-white">
                           <button

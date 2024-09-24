@@ -11,7 +11,7 @@ const YearlyAnalytics = () => {
   const [data, setData] = useState([]);
 
   const fetchData = async () => {
-    const reportRef = ref(database, 'reports');
+    const reportRef = ref(database, 'led/reports');
 
     try {
       const reportSnapshot = await get(reportRef);
@@ -27,23 +27,24 @@ const YearlyAnalytics = () => {
           
           // Count reports for years 2024-2034
           if (reportYear >= 2024 && reportYear <= 2034) {
-            yearlyCounts[reportYear] = yearlyCounts[reportYear] || { NOISE: 0, THIEF: 0, FIRE: 0 };
+            yearlyCounts[reportYear] = yearlyCounts[reportYear] || { NOISE: 0, THIEF: 0, FIRE: 0, ACCIDENT: 0 };
             yearlyCounts[reportYear][report.type] += 1;
           }
         });
 
-        // Prepare data for chart
         const years = [];
         const noiseCounts = [];
         const thiefCounts = [];
         const fireCounts = [];
+        const accidentCounts = [];
         
         for (let year = 2024; year <= 2034; year++) {
           years.push(year);
-          const counts = yearlyCounts[year] || { NOISE: 0, THIEF: 0, FIRE: 0 };
+          const counts = yearlyCounts[year] || { NOISE: 0, THIEF: 0, FIRE: 0, ACCIDENT: 0 };
           noiseCounts.push(counts.NOISE);
           thiefCounts.push(counts.THIEF);
           fireCounts.push(counts.FIRE);
+          accidentCounts.push(counts.ACCIDENT);
         }
 
         setData({
@@ -51,6 +52,7 @@ const YearlyAnalytics = () => {
           noiseCounts,
           thiefCounts,
           fireCounts,
+          accidentCounts,
         });
       }
     } catch (error) {
@@ -86,6 +88,14 @@ const YearlyAnalytics = () => {
         data: data.fireCounts || [],
         borderColor: 'rgba(255, 206, 86, 1)',
         backgroundColor: 'rgba(255, 206, 86, 0.2)',
+        fill: true,
+        tension: 0.4,
+      },
+      {
+        label: 'Accident',
+        data: data.accidentCounts || [],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,
         tension: 0.4,
       },

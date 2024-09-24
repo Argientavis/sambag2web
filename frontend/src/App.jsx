@@ -13,6 +13,8 @@ import Analytics from './Pages/Map/MonthlyAnalytics'
 import MonthlyAnalytics from './Pages/Map/MonthlyAnalytics'
 import AnnualAnalytics from './Pages/Map/AnnualAnalytics'
 import YearlyAnalytics from './Pages/Map/YearlyAnalytics'
+import History from './Pages/Map/History'
+import ForgotPass from './Pages/ForgotPass'
 
 
 const ProtectedRoutes = ({children})=>{
@@ -62,10 +64,19 @@ function App() {
       <Route path='/dashboard' element={<ProtectedRoutes>
         <Dashboard/>
       </ProtectedRoutes>}/>
-        <Route path='/monthly-analytics' element={<MonthlyAnalytics/>}/>
-        <Route path='/annual-analytics' element={<AnnualAnalytics/>}/>
-        <Route path='/yearly-analytics' element={<YearlyAnalytics/>}/>
-
+        <Route path='/monthly-analytics' element={<ProtectedRoutes>
+          <MonthlyAnalytics/>
+        </ProtectedRoutes>}/>
+        <Route path='/annual-analytics' element={<ProtectedRoutes>
+          <AnnualAnalytics/>
+        </ProtectedRoutes>}/>
+        <Route path='/yearly-analytics' element={<ProtectedRoutes>
+          <YearlyAnalytics/>
+        </ProtectedRoutes>}/>
+        <Route path='/history' element={<ProtectedRoutes>
+          <History/>
+        </ProtectedRoutes>}/>
+        <Route path='reset-password' element={<ForgotPass/>}/>
       </Routes>
     </div>
     </>
