@@ -1,8 +1,16 @@
-import React, { useState,useEffect } from "react";
-import brgysambag from "../assets/brgysambag.jpg";
-import logo from "../assets/sambaglogo.png";
+import React, { useState, useEffect } from "react";
+import brgysambag from "../assets/backgroundImage.png";
+import alert from "../assets/alarm.png";
+import backgroundLogin from '../assets/backgroundLogin.png'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import layer from '../assets/2nd.png'
+import {
+  faEye,
+  faEyeSlash,
+  faEnvelope,
+  faUser,
+  faLock,
+} from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../Frontend-auth/auth.controller";
 import { useNavigate } from "react-router-dom";
 
@@ -10,22 +18,19 @@ const Login = () => {
   const [showForgotPass, setShowForgotPass] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState(""); 
-  const [email, setEmail] = useState(""); 
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
 
-  
-  const {forLogin,isLoading,error,role} = useAuthStore();
-  
+  const { forLogin, isLoading, error, role } = useAuthStore();
 
-  
   const handleLogin = async (e) => {
     e.preventDefault();
     const result = await forLogin(username, password);
-   if(result?.success){
-    alert('Login Sucessfully')
-   }else{
-    console.error(error)
-   }
+    if (result?.success) {
+      alert("Login Sucessfully");
+    } else {
+      console.error(error);
+    }
   };
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -37,119 +42,93 @@ const Login = () => {
 
   return (
     <div className="overflow-hidden h-screen">
-      <div className="bg-[#FFFFFF] py-5 pl-20 font-bold text-xl w-full">
-        WELCOME TO SAMBAG2 !
-      </div>
       <div className="relative flex justify-center items-center h-screen">
         <img
           className="bg-cover w-full h-full absolute brightness-75"
           src={brgysambag}
           alt=""
         />
-        <div
-          className="absolute inset-0 opacity-50"
-          style={{ backgroundColor: "rgba(53, 85, 81, 0.75)" }}
-        ></div>
-        <div className="h-[33rem] w-[25rem] lg:w-[35rem] rounded-lg mt-[-5rem] bg-[#87ABA7] bg-opacity-80 relative">
-          <div className="flex justify-center">
-            <div className="h-32 w-32 rounded-full mt-10">
-              <img src={logo} className="bg-cover w-full h-full" alt="" />
-            </div>
-          </div>
+        <div className="h-[90%] w-[60%] rounded-lg bg-[#FFF6F0] relative">
+          <div className="flex justify-center"></div>
           {showForgotPass ? (
-            <>
-              <div className="mt-10 flex flex-col justify-center pl-16">
-                <form onSubmit={handleForgotPassword}>
-                  <label className="text-white font-bold" htmlFor="email">
-                    Email:
-                  </label>
-                  <br />
-                  <input
-                    className="mb-6 h-8 rounded-[4px] w-5/6 bg-white border-transparent outline-none pl-4"
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={email} // Controlled input
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                  />
-                  <br />
-                  <br />
-                </form>
-              </div>
-              <div className="flex justify-end items-center pr-[4rem] lg:pr-[6rem] xl:pr-24">
-                <button
-                  className="text-white"
-                  onClick={() => setShowForgotPass(false)}
-                >
-                  LOG IN
-                </button>
-              </div>
-              <div className="flex justify-center mt-10">
-                <button className="rounded-md w-32 h-10 mt-2 text-[#113156] font-bold bg-[#F0D859]">
-                  SUBMIT
-                </button>
-              </div>
-            </>
+            <></>
           ) : (
             <>
-              <div className="mt-10 flex flex-col justify-center pl-16">
-                <form name="login">
-                  <label className="text-white font-bold" htmlFor="username">
-                    Username:
-                  </label>
-                  <br />
-                  <input
-                    placeholder="Enter username"
-                    value={username} // Controlled input
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="mb-6 h-8 rounded-[4px] w-5/6 bg-white border-transparent outline-none pl-4"
-                    type="text"
-                    required
-                    name="username"
-                    id="username"
-                    autoComplete="username"
-                  />
-                  <br />
-                  <label className="text-white font-bold" htmlFor="password">
-                    Password:
-                  </label>
-                  <br />
-                  <div className="relative">
-                    <input
-                      placeholder="Enter your password"
-                      onChange={(e) => setPassword(e.target.value)}
-                      value={password} 
-                      className="mb-4 h-8 rounded-[4px] w-5/6 bg-white border-transparent outline-none pl-4 pr-10"
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      id="password"
-                      required
-                      autoComplete="current-password"
-                    />
-                    <FontAwesomeIcon
-                      icon={showPassword ? faEyeSlash : faEye}
-                      className="relative right-8 text-gray-400 cursor-pointer"
-                      onClick={togglePasswordVisibility}
-                    />
+              <div className="flex">
+                <div className="w-2/3">
+                  <div className="flex flex-col justify-center items-center gap-2">
+                    <img className="h-[25vh] mt-2" src={alert} alt="" />
+                    <div className="flex flex-col justify-center items-center font-bold text-[3vh]   text-[#163458]">
+                      <h1>Welcome to Sambag 2</h1>
+                      <h1>Emergency Alert</h1>
+                    </div>
+                    <form name="login">
+                      <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
+                        {/*Username*/}
+                        <label className="font-bold" htmlFor="username">
+                          Username:
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
+                            <FontAwesomeIcon icon={faUser} />
+                          </div>
+                          <input
+                            onChange={(e) => setUsername(e.target.value)}
+                            value={username}
+                            type="text"
+                            name="username"
+                            id="username"
+                            placeholder="Enter Username"
+                            className="ps-6 rounded-lg w-[25vw] py-1 border"
+                          />
+                        </div>
+
+                        {/*Password*/}
+                        <div className="mt-4">
+                          <label className="font-bold" htmlFor="password">
+                            Password
+                          </label>
+                          <div className="relative">
+                            <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
+                              <FontAwesomeIcon icon={faLock} />
+                            </div>
+                            <div className="absolute end-2   top-1/2 transofrm -translate-y-1/2 z-20">
+                              <FontAwesomeIcon
+                                onClick={() => setShowPassword(!showPassword)}
+                                icon={showPassword ? faEyeSlash : faEye}
+                              />
+                            </div>
+                            <input
+                              id="password"
+                              name="password"
+                              onChange={(e)=>setPassword(e.target.value)}
+                              value={password}
+                              type={showPassword ? "text" : "password"}
+                              className="ps-6 rounded-lg w-[25vw] py-1 border"
+                              placeholder="Enter Password"
+                            />
+                          </div>
+                        </div>
+                        <div className="text-[12px] flex justify-end">
+                          <button className="text-[#2203AC] underline">Forgot Password</button>
+                        </div>
+                        <div className="flex justify-center items-center mt-[6%] text-white">
+                          <button
+                            onClick={handleLogin}
+                            className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
+                          >
+                            Login
+                          </button>
+                        </div>
+                      </div>
+                    </form>
                   </div>
-                  <br />
-                </form>
-              </div>
-              <div className="flex justify-end items-center pr-[4rem] lg:pr-[6rem] xl:pr-24">
-                <button
-                  className="text-white"
-                  onClick={() => setShowForgotPass(true)}
-                >
-                  Forgot Password?
-                </button>
-              </div>
-              {error && <p className="text-red-500">{error}</p>}
-              <div className="flex justify-center mt-10">
-                <button onClick={handleLogin} className="rounded-md w-32 h-10 mt-2 text-[#113156] font-bold bg-[#F0D859]">
-                  LOG IN
-                </button>
+                </div>
+
+                {/*The Background*/}
+                <div>
+                  <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
+                </div>
               </div>
             </>
           )}

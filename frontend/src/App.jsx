@@ -8,6 +8,11 @@ import MapDashboard from './Pages/Map/MapDashboard'
 import { useAuthStore } from './Frontend-auth/auth.controller'
 import { Navigate } from 'react-router-dom'
 import Dashboard from './Pages/Dashboard/Dashboard'
+import AnalyticsComponent from './Components/AnalyticsComponent'
+import Analytics from './Pages/Map/MonthlyAnalytics'
+import MonthlyAnalytics from './Pages/Map/MonthlyAnalytics'
+import AnnualAnalytics from './Pages/Map/AnnualAnalytics'
+import YearlyAnalytics from './Pages/Map/YearlyAnalytics'
 
 
 const ProtectedRoutes = ({children})=>{
@@ -57,6 +62,10 @@ function App() {
       <Route path='/dashboard' element={<ProtectedRoutes>
         <Dashboard/>
       </ProtectedRoutes>}/>
+        <Route path='/monthly-analytics' element={<MonthlyAnalytics/>}/>
+        <Route path='/annual-analytics' element={<AnnualAnalytics/>}/>
+        <Route path='/yearly-analytics' element={<YearlyAnalytics/>}/>
+
       </Routes>
     </div>
     </>
