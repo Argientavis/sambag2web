@@ -20,8 +20,7 @@ const [analytics,setShowAnalytics] = useState(false)
           </div>
         </div>
         {analytics &&(
-          <div className='grid grid-cols-4'>
-            <div></div>
+          <div className='grid grid-cols-3'>
             <div></div>
             <div></div>
             <div className=' grid grid-rows-3 bg-white shadow-md'>

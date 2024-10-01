@@ -102,11 +102,11 @@ const MapDashboard = () => {
                             <button className="bg-[#8A252C] border-r w-full border-white border-opacity-50 py-3">History</button>
                         </Link>
                         <button className="bg-[#8A252C]" onClick={() => setShowAnalytics(!analytics)}>
-                            <FontAwesomeIcon icon={faChartSimple} /> Analytics 
+                            <FontAwesomeIcon icon={faChartSimple} /> Analytics &nbsp;0.
                             <FontAwesomeIcon icon={faCaretUp} className="h-3" />
                         </button>
                         <button></button>
-                        <button></button>
+                      
                         {analytics && (
                             <div className='grid grid-rows-3 bg-white text-black shadow-md'>
                                 <Link to='/monthly-analytics'> 

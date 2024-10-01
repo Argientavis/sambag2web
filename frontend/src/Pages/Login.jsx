@@ -12,6 +12,7 @@ import {
   faEnvelope,
   faUser,
   faLock,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../Frontend-auth/auth.controller";
 import { useNavigate } from "react-router-dom";
@@ -101,7 +102,11 @@ const Login = () => {
                             onClick={resetPasswordHandler}
                             className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
                           >
-                            Submit
+                            {isLoading ? (
+                              <><FontAwesomeIcon className="animate-spin" icon={faSpinner} /></>
+                            ):(
+                              <>Submit</>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -178,9 +183,14 @@ const Login = () => {
                         <div className="flex justify-center items-center mt-[6%] text-white">
                           <button
                             onClick={handleLogin}
+                            
                             className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
                           >
-                            Login
+                            {isLoading ? (
+                             <><FontAwesomeIcon className="animate-spin" icon={faSpinner} /></> 
+                            ):(
+                              <>Login</>
+                            )}
                           </button>
                         </div>
                       </div>

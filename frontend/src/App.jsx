@@ -15,6 +15,7 @@ import AnnualAnalytics from './Pages/Map/AnnualAnalytics'
 import YearlyAnalytics from './Pages/Map/YearlyAnalytics'
 import History from './Pages/Map/History'
 import ForgotPass from './Pages/ForgotPass'
+import Navbar from './Components/Navbar'
 
 
 const ProtectedRoutes = ({children})=>{
@@ -31,12 +32,10 @@ const RedirectAuthenticatedUser = ({children})=>{
 
   if(isAuthenticated){
     if(role === 'admin' || role === 'employee'){
-      return <Navigate to='/dashboard' replace/>
-    }else if(role === 'map'){
       return <Navigate to='/map-dashboard' replace/>
     }
   }
-    return children;
+  return children
 }
 
 function App() {
