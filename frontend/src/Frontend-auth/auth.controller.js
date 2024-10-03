@@ -1,11 +1,11 @@
 
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword,createUserWithEmailAndPassword } from "firebase/auth";
 import { database, auth } from "../Firebase"; 
 import { ref, get, query, orderByChild, equalTo } from "firebase/database";
 import axios from "axios";
 import { create } from "zustand";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://localhost:5001/api";
 
 export const useAuthStore = create((set) => ({
     user: null,
@@ -70,7 +70,7 @@ export const useAuthStore = create((set) => ({
                 const userCredentials = await signInWithEmailAndPassword(auth, email, password);
                 const idToken = await userCredentials.user.getIdToken();
 
-                const response = await axios.post(`${API_URL}/login`, { idToken}, { withCredentials: true });
+                const response = await axios.post(`${API_URL}/login`, { idToken }, { withCredentials: true });
 
                 if (response.data.success) {
                     const role = Object.values(userData)[0].role;
@@ -101,6 +101,23 @@ export const useAuthStore = create((set) => ({
             }
     
             set({ error: errorMessage, isLoading: false });
+        }
+    },
+    signup: async (username, email, password, role) => {
+        set({ error: null, isLoading: true });
+        try {
+            const response = await axios.post(`${API_URL}/signup`, { username, email, password, role });
+
+            if (response.data.success) {
+                return { success: true };
+            } else {
+                throw new Error(response.data.message || "Signup failed");
+            }
+
+        } catch (error) {
+            console.error("Error signing up:", error.message);
+            set({ error: error.response ? error.response.data : error.message, isLoading: false });
+            return { success: false, error: error.response ? error.response.data : error.message };
         }
     },
 }));

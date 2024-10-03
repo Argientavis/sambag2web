@@ -73,7 +73,7 @@ const Map = ({ selectedCoordinates, data }) => {
     };
 
     return (
-        <MapContainer className="leaflet_container" center={[10.3058, 123.8910]} zoom={17} scrollWheelZoom={true}>
+        <MapContainer className="leaflet_container z-0" center={[10.3058, 123.8910]} zoom={17} scrollWheelZoom={true}>
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

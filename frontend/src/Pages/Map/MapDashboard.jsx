@@ -4,12 +4,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Map from '../../Components/Map';
 import { database } from "../../Firebase";
 import { ref, get } from "firebase/database";
-import { dateFormat } from "../../Components/DateFormatter";
+import { dateFormat } from "../../utils/DateFormatter";
 import Navbar from "../../Components/Navbar";
 import { Link } from 'react-router-dom';
 import fire from '../../assets/fire.png';
 import thief from '../../assets/thief.png';
 import noise from '../../assets/noise.png';
+import StateModal from "../../modals/StateModal";
 
 const MapDashboard = () => {
     const [data, setData] = useState([]);
@@ -22,6 +23,13 @@ const MapDashboard = () => {
             const reportSnapshot = await get(reportRef);
             const reportData = reportSnapshot.val();
             const reportsWithId = reportData ? Object.entries(reportData).map(([id, report]) => ({ id, ...report })) : [];
+    
+            reportsWithId.sort((a, b) => {
+                const dateA = new Date(a.timestamp); 
+                const dateB = new Date(b.timestamp);
+                return dateB - dateA; // Newest first
+            });
+    
             setData(reportsWithId);
         } catch (error) {
             console.error('Error fetching data', error);
@@ -30,6 +38,9 @@ const MapDashboard = () => {
 
     useEffect(() => {
         fetchData();
+        const intervalId = setInterval(fetchData, 1000); 
+
+        return () => clearInterval(intervalId);
     }, []);
 
     const handleCoordinatesClick = (latitude, longitude) => {
@@ -46,6 +57,7 @@ const MapDashboard = () => {
     return (
         <div>
             <Navbar />
+            <StateModal />
             <main className="flex">
                 <section className="w-1/3 white h-[48rem] flex flex-col overflow-auto">
                     <h1 className="flex justify-center items-center text-xl bg-[#8A252C] text-white py-2.5">
@@ -102,25 +114,23 @@ const MapDashboard = () => {
                             <button className="bg-[#8A252C] border-r w-full border-white border-opacity-50 py-3">History</button>
                         </Link>
                         <button className="bg-[#8A252C]" onClick={() => setShowAnalytics(!analytics)}>
-                            <FontAwesomeIcon icon={faChartSimple} /> Analytics &nbsp;0.
+                            <FontAwesomeIcon icon={faChartSimple} /> Analytics &nbsp;
                             <FontAwesomeIcon icon={faCaretUp} className="h-3" />
                         </button>
-                        <button></button>
-                      
-                        {analytics && (
-                            <div className='grid grid-rows-3 bg-white text-black shadow-md'>
-                                <Link to='/monthly-analytics'> 
-                                    <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Monthly Reports</button>
-                                </Link>
-                                <Link to='/annual-analytics'> 
-                                    <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Annual Reports</button>
-                                </Link>
-                                <Link to='/yearly-analytics'> 
-                                    <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Yearly Reports</button>
-                                </Link>
-                            </div>
-                        )}  
                     </div>
+                    {analytics && (
+                        <div className='grid grid-rows-3 bg-white text-black shadow-md'>
+                            <Link to='/monthly-analytics'>
+                                <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Monthly Reports</button>
+                            </Link>
+                            <Link to='/annual-analytics'>
+                                <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Annual Reports</button>
+                            </Link>
+                            <Link to='/yearly-analytics'>
+                                <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Yearly Reports</button>
+                            </Link>
+                        </div>
+                    )}
                     <div className="border border-gray-400 flex-grow">
                         <Map selectedCoordinates={selectedCoordinates} data={data} />
                     </div>

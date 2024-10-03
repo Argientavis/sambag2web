@@ -3,6 +3,7 @@ import logo from "../assets/sambaglogo.png";
 import { faGear,faMagnifyingGlass,faRightFromBracket,faUser,faLock} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAuthStore } from '../Frontend-auth/auth.controller';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const {forLogout,role} = useAuthStore()
@@ -21,9 +22,9 @@ const Navbar = () => {
       <button><FontAwesomeIcon className="h-8 w-8 text-white" icon={faGear} onClick={()=>setShowSettings(!showSetting)} /></button>
       {showSetting && (
        <div className='absolute bg-white flex flex-col justify-center py-1 px-1 left-1/2 transform -translate-x-1/2 rounded-md text-sm z-50'>
-          <button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white'><FontAwesomeIcon icon={faRightFromBracket}/>Logout</button> 
+          <button onClick={handleLogout} className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white'><FontAwesomeIcon icon={faRightFromBracket}/>Logout</button> 
             {role === 'admin'&&(
-              <button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'> <FontAwesomeIcon icon={faUser}/>Create Account</button>
+              <Link to='/signup'><button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'> <FontAwesomeIcon icon={faUser}/>Create Account</button></Link>
             )}
             <button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'><FontAwesomeIcon icon={faLock}/>Change Password</button>
        </div>
