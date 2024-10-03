@@ -14,6 +14,7 @@ import YearlyAnalytics from './Pages/Map/YearlyAnalytics'
 import History from './Pages/Map/History'
 import ForgotPass from './Pages/ForgotPass'
 import Navbar from './Components/Navbar'
+import ChangePassword from './Pages/ChangePassword'
 
 
 const ProtectedRoutes = ({children})=>{
@@ -73,6 +74,9 @@ function App() {
         </ProtectedRoutes>}/>
         <Route path='signup' element={<ProtectedRoutes>
           <Signup/>
+        </ProtectedRoutes>}/>
+        <Route path='change-password' element={<ProtectedRoutes>
+          <ChangePassword/>
         </ProtectedRoutes>}/>
         <Route path='reset-password' element={<ForgotPass/>}/>
     

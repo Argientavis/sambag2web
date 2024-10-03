@@ -1,5 +1,5 @@
 
-import { sendPasswordResetEmail, signInWithEmailAndPassword,createUserWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword,updatePassword  } from "firebase/auth";
 import { database, auth } from "../Firebase"; 
 import { ref, get, query, orderByChild, equalTo } from "firebase/database";
 import axios from "axios";

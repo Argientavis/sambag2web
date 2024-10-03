@@ -26,7 +26,7 @@ const Navbar = () => {
             {role === 'admin'&&(
               <Link to='/signup'><button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'> <FontAwesomeIcon icon={faUser}/>Create Account</button></Link>
             )}
-            <button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'><FontAwesomeIcon icon={faLock}/>Change Password</button>
+            <Link to='/change-password'><button className='flex  items-center px-1 py-0.5 gap-2 hover:bg-[#801B22] hover:text-white whitespace-nowrap'><FontAwesomeIcon icon={faLock}/>Change Password</button></Link>
        </div>
       )}
       
