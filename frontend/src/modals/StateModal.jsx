@@ -10,7 +10,7 @@ const StateModal = () => {
         try {
             const stateSnapshot = await get(stateRef);
             const stateData = stateSnapshot.val();
-            setState(stateData.state)
+            setState(stateData)
         } catch (error) {
             console.error('Error fetching state', error);
         }
