@@ -120,6 +120,22 @@ export const useAuthStore = create((set) => ({
             return { success: false, error: error.response ? error.response.data : error.message };
         }
     },
+    changePassword: async (newPassword) => {
+        set({ error: null, isLoading: true });
+        try {
+            if (!auth.currentUser) {
+                throw new Error("No user is currently signed in.");
+            }
+
+            await updatePassword(auth.currentUser, newPassword);
+            set({ isLoading: false });
+            return { success: true };
+        } catch (error) {
+            console.error("Error changing password:", error.message);
+            set({ error: error.message, isLoading: false });
+            return { success: false, error: error.message };
+        }
+    },
 }));
 
 
