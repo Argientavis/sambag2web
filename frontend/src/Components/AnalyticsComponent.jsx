@@ -23,12 +23,9 @@ const [analytics,setShowAnalytics] = useState(false)
           <div className='grid grid-cols-3'>
             <div></div>
             <div></div>
-            <div className=' grid grid-rows-3 bg-white shadow-md'>
+            <div className=' grid grid-rows-2 bg-white shadow-md'>
               <Link to='/monthly-analytics'>
                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Monthly Reports</button>
-              </Link>
-              <Link to='/annual-analytics'>
-                <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Annual Reports</button>
               </Link>
               <Link to='/yearly-analytics'>
                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Yearly Reports</button>

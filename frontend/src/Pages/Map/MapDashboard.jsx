@@ -11,6 +11,7 @@ import fire from '../../assets/fire.png';
 import thief from '../../assets/thief.png';
 import noise from '../../assets/noise.png';
 import StateModal from "../../modals/StateModal";
+import axios from "axios";
 
 const MapDashboard = () => {
     const [data, setData] = useState([]);
@@ -23,28 +24,60 @@ const MapDashboard = () => {
             const reportSnapshot = await get(reportRef);
             const reportData = reportSnapshot.val();
             const reportsWithId = reportData ? Object.entries(reportData).map(([id, report]) => ({ id, ...report })) : [];
-    
+
             reportsWithId.sort((a, b) => {
                 const dateA = new Date(a.timestamp); 
                 const dateB = new Date(b.timestamp);
                 return dateB - dateA; // Newest first
             });
-    
+
+            const today = new Date();
+            await Promise.all(reportsWithId.map(async (report) => {
+                const reportDate = new Date(report.timestamp);
+                if (
+                    reportDate.getFullYear() === today.getFullYear() &&
+                    reportDate.getMonth() === today.getMonth() &&
+                    reportDate.getDate() === today.getDate()
+                ) {
+                    report.markerType = "today"; // Today's report
+                } else if (reportDate > today) {
+                    report.markerType = "new"; // New report
+                } else {
+                    report.markerType = "old"; // Old report
+                }
+
+                const location = parseLocation(report.location);
+                if (location) {
+                    try {
+                        const response = await axios.get(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}`
+                        );
+                        if (response.data && response.data.display_name) {
+                            report.address = response.data.display_name;
+                        } else {
+                            report.address = "Address not available";
+                        }
+                    } catch (error) {
+                        report.address = "Address not available";
+                    }
+                } else {
+                    report.address = "Location not available";
+                }
+            }));
+
             setData(reportsWithId);
         } catch (error) {
-            console.error('Error fetching data', error);
+            console.error('Error fetching data:', error);
         }
     };
 
     useEffect(() => {
         fetchData();
-        const intervalId = setInterval(fetchData, 1000); 
-
+        const intervalId = setInterval(fetchData, 3000); // Update interval to 3 seconds
         return () => clearInterval(intervalId);
     }, []);
 
     const handleCoordinatesClick = (latitude, longitude) => {
-        console.log(`Coordinates clicked: ${latitude} ${longitude}`);
         setSelectedCoordinates({ latitude, longitude });
     };
 
@@ -55,17 +88,39 @@ const MapDashboard = () => {
     };
 
     return (
-        <div>
+        <div className="h-full w-full flex flex-col">
             <Navbar />
-            <StateModal />
-            <main className="flex">
-                <section className="w-1/3 white h-[48rem] flex flex-col overflow-auto">
+            <main className="flex-1 flex overflow-hidden">
+                <section className="lg:w-1/3 w-full bg-white h-full flex flex-col z-0">
                     <h1 className="flex justify-center items-center text-xl bg-[#8A252C] text-white py-2.5">
                         Today's Report
                     </h1>
-                    <div>
+                     {/* Color Indicator Section - Updated to Two-by-Two Grid */}
+                     <div className="p-2 bg-white border-b border-gray-300">
+                        <h2 className="text-sm font-semibold mb-2">Marker Color Indicators:</h2>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center mb-1">
+                                <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                                <span className="text-xs">Today's Report</span>
+                            </div>
+                            <div className="flex items-center mb-1">
+                                <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+                                <span className="text-xs">New Report</span>
+                            </div>
+                            <div className="flex items-center mb-1">
+                                <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                                <span className="text-xs">Selected Report</span>
+                            </div>
+                            <div className="flex items-center">
+                                <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                                <span className="text-xs">Old Report</span>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Report List Section with Scroll */}
+                    <div className="flex-1 overflow-y-auto">
                         {data.length > 0 ? (
-                            <div>
+                            <div className="max-h-[450px] overflow-y-auto"> {/* Updated scrollable container */}
                                 {data.map((report, index) => {
                                     const location = parseLocation(report.location);
                                     let incidentImage;
@@ -79,59 +134,56 @@ const MapDashboard = () => {
                                     }
 
                                     return (
-                                        <div key={index} className="grid grid-cols-4 gap-2 bg-[#FFF6F0] border-b border-[#000000] border-opacity-30">
-                                            <img className="py-2 px-1" src={report.imageUrl} alt="Report" />
-                                            <div className="col-span-2 flex flex-col justify-center ps-6">
+                                        <div key={index} className="grid grid-cols-4 gap-2 bg-[#FFF6F0] border-b border-[#000000] border-opacity-30 p-2">
+                                            <img className="w-full h-auto col-span-1" src={report.imageUrl} alt="Report" />
+                                            <div className="col-span-3 flex flex-col justify-center ps-6">
                                                 <h1 className="font-bold">
                                                     {location ? (
                                                         <span
                                                             onClick={() => handleCoordinatesClick(location.latitude, location.longitude)}
                                                             className="text-blue-500 cursor-pointer"
                                                         >
-                                                            {`Latitude: ${location.latitude}, Longitude: ${location.longitude}`}
+                                                            {report.address}
                                                         </span>
                                                     ) : "Location not available"}
                                                     <br />
                                                     <p className="text-[8px] font-medium">File Emergency - {dateFormat(report.timestamp)}</p>
                                                 </h1>
                                             </div>
-                                            {incidentImage && (
-                                                <img className="mt-8 h-[8vh]" src={incidentImage} alt={report.type} />
-                                            )}
                                         </div>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <p>No reports available.</p>
+                            <p className="text-center">No reports available.</p>
                         )}
                     </div>
                 </section>
 
-                <div className="w-full bg-white flex flex-col">
-                    <div className="text-white grid grid-cols-2">
-                        <Link to='/history'>
-                            <button className="bg-[#8A252C] border-r w-full border-white border-opacity-50 py-3">History</button>
+                <div className="flex-1 bg-white flex flex-col">
+                    <div className="w-full bg-[#8A252C] flex flex-row divide-x divide-white">
+                        <button className="flex-1 py-3 text-center text-white">Today's Report</button>
+                        <Link to='/history' className="flex-1">
+                            <button className="w-full py-3 text-center text-white">History</button>
                         </Link>
-                        <button className="bg-[#8A252C]" onClick={() => setShowAnalytics(!analytics)}>
-                            <FontAwesomeIcon icon={faChartSimple} /> Analytics &nbsp;
-                            <FontAwesomeIcon icon={faCaretUp} className="h-3" />
+                        <button className="flex-1 py-3 text-center text-white flex items-center justify-center" onClick={() => setShowAnalytics(!analytics)}>
+                            <FontAwesomeIcon icon={faChartSimple} className="mr-2" /> Analytics
+                            <FontAwesomeIcon icon={faCaretUp} className="ml-1" />
                         </button>
                     </div>
                     {analytics && (
-                        <div className='grid grid-rows-3 bg-white text-black shadow-md'>
+                        <div className='grid grid-rows-2 bg-white text-black shadow-md'>
                             <Link to='/monthly-analytics'>
                                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Monthly Reports</button>
                             </Link>
-                            <Link to='/annual-analytics'>
-                                <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Annual Reports</button>
-                            </Link>
+                
                             <Link to='/yearly-analytics'>
                                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Yearly Reports</button>
                             </Link>
                         </div>
                     )}
-                    <div className="border border-gray-400 flex-grow">
+                     <StateModal />
+                    <div className="flex-grow overflow-hidden">
                         <Map selectedCoordinates={selectedCoordinates} data={data} />
                     </div>
                 </div>

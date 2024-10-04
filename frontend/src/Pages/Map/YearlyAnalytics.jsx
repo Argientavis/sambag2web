@@ -9,8 +9,9 @@ ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, T
 
 const YearlyAnalytics = () => {
   const [data, setData] = useState([]);
+  const [currentYear, setCurrentYear] = useState(2024);
 
-  const fetchData = async () => {
+  const fetchData = async (year) => {
     const reportRef = ref(database, 'led/reports');
 
     try {
@@ -25,7 +26,6 @@ const YearlyAnalytics = () => {
           const reportDate = new Date(report.timestamp);
           const reportYear = reportDate.getFullYear();
           
-          // Count reports for years 2024-2034
           if (reportYear >= 2024 && reportYear <= 2034) {
             yearlyCounts[reportYear] = yearlyCounts[reportYear] || { NOISE: 0, THIEF: 0, FIRE: 0, ACCIDENT: 0 };
             yearlyCounts[reportYear][report.type] += 1;
@@ -61,8 +61,12 @@ const YearlyAnalytics = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(currentYear);
+  }, [currentYear]);
+
+  const handleYearChange = (e) => {
+    setCurrentYear(parseInt(e.target.value, 10));
+  };
 
   const chartData = {
     labels: data.years || [],
@@ -116,7 +120,15 @@ const YearlyAnalytics = () => {
     <div>
       <AnalyticsComponent />
       <div className='px-16 mt-4'>
-        <h1 className='text-2xl font-bold'>Yearly Report</h1>
+        <div className="flex items-center">
+          <h1 className='text-2xl font-bold mr-4'>Yearly Report</h1>
+          <label htmlFor="year" className="text-lg mr-2">Select Year:</label>
+          <select id="year" value={currentYear} onChange={handleYearChange} className="border p-2 rounded">
+            {Array.from({ length: 11 }, (_, i) => 2024 + i).map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <div className='mb-10' style={{ width: '100%', height: '300px', paddingLeft: '2rem', paddingRight: '2rem' }}>
         <Line data={chartData} options={options} />
