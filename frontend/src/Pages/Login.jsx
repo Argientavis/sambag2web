@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import brgysambag from "../assets/backgroundImage.png";
 import alert from "../assets/alarm.png";
 import backgroundLogin from '../assets/backgroundLogin.png'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import forgotPassImage from '../assets/forgotPass.png'
-import layer from '../assets/2nd.png'
-
-import {
-  faEye,
-  faEyeSlash,
-  faEnvelope,
-  faUser,
-  faLock,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faEnvelope, faUser, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../Frontend-auth/auth.controller";
 import { useNavigate } from "react-router-dom";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const Login = () => {
   const [showForgotPass, setShowForgotPass] = useState(false);
@@ -23,30 +15,34 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const recaptchaRef = useRef();
 
-  const { forLogin, isLoading, error, role,forForgotPass } = useAuthStore();
+  const { forLogin, isLoading, error, forForgotPass } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const result = await forLogin(username, password);
-    if (result?.success) {
-      alert('Login Sucessfully')
-    } else {
-      console.error(error);
+    
+    // Check if recaptchaRef is available
+    if (recaptchaRef.current) {
+      const recaptchaToken = await recaptchaRef.current.executeAsync();
+      recaptchaRef.current.reset();
+      
+      // Pass the recaptchaToken to your login function
+      const result = await forLogin(username, password, recaptchaToken); // Ensure forLogin accepts recaptchaToken
+      if (result?.success) {
+        alert('Login Successfully');
+      } else {
+        console.error(error);
+      }
     }
-  };
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   const resetPasswordHandler = async (e) => {
     e.preventDefault();
-  
     const result = await forForgotPass(email);
     if (result?.success) {
-      alert('Sent email for reset password successfully')
+      alert('Sent email for reset password successfully');
       setEmail(''); 
       setShowForgotPass(false); 
     } else {
@@ -57,11 +53,7 @@ const Login = () => {
   return (
     <div className="overflow-hidden h-screen">
       <div className="relative flex justify-center items-center h-screen">
-        <img
-          className="bg-cover w-full h-full absolute brightness-75"
-          src={brgysambag}
-          alt=""
-        />
+        <img className="bg-cover w-full h-full absolute brightness-75" src={brgysambag} alt="" />
         <div className="h-[90%] w-[60%] rounded-lg bg-[#FFF6F0] relative">
           <div className="flex justify-center"></div>
           {showForgotPass ? (
@@ -70,17 +62,14 @@ const Login = () => {
                 <div className="w-2/3">
                   <div className="flex flex-col justify-center items-center gap-2">
                     <img className="h-[25vh] mt-2" src={forgotPassImage} alt="" />
-                    <div className="flex flex-col justify-center items-center font-bold text-[4vh]   text-[#163458]">
+                    <div className="flex flex-col justify-center items-center font-bold text-[4vh] text-[#163458]">
                       <h1>Forgot Pass</h1>
-                      <h1 className="text-[10px] font-medium mt-3">Please enter your email. We will send you a link  to reset</h1>
+                      <h1 className="text-[10px] font-medium mt-3">Please enter your email. We will send you a link to reset</h1>
                       <h1 className="text-[10px] font-medium">your password</h1>
                     </div>
                     <form name="login">
                       <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
-                        {/*Username*/}
-                        <label className="font-bold" htmlFor="email">
-                          Email:
-                        </label>
+                        <label className="font-bold" htmlFor="email">Email:</label>
                         <div className="relative">
                           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                             <FontAwesomeIcon icon={faEnvelope} />
@@ -93,28 +82,21 @@ const Login = () => {
                             className="ps-8 rounded-lg w-[25vw] py-2 border"
                           />
                         </div>
-
                         <div className="text-[12px] flex justify-end">
-                          <button className="text-[#2203AC] underline" onClick={()=>setShowForgotPass(false)}>Log in</button>
+                          <button className="text-[#2203AC] underline" onClick={() => setShowForgotPass(false)}>Log in</button>
                         </div>
                         <div className="flex justify-center items-center mt-[6%] text-white">
                           <button
                             onClick={resetPasswordHandler}
                             className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
                           >
-                            {isLoading ? (
-                              <><FontAwesomeIcon className="animate-spin" icon={faSpinner} /></>
-                            ):(
-                              <>Submit</>
-                            )}
+                            {isLoading ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : <>Submit</>}
                           </button>
                         </div>
                       </div>
                     </form>
                   </div>
                 </div>
-
-                {/*The Background*/}
                 <div>
                   <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
                 </div>
@@ -126,16 +108,13 @@ const Login = () => {
                 <div className="w-2/3">
                   <div className="flex flex-col justify-center items-center gap-2">
                     <img className="h-[25vh] mt-2" src={alert} alt="" />
-                    <div className="flex flex-col justify-center items-center font-bold text-[4vh]   text-[#163458]">
+                    <div className="flex flex-col justify-center items-center font-bold text-[4vh] text-[#163458]">
                       <h1>Welcome to Sambag 2</h1>
                       <h1>Emergency Alert</h1>
                     </div>
                     <form name="login">
                       <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
-                        {/*Username*/}
-                        <label className="font-bold" htmlFor="username">
-                          Username:
-                        </label>
+                        <label className="font-bold" htmlFor="username">Username:</label>
                         <div className="relative">
                           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                             <FontAwesomeIcon icon={faUser} />
@@ -151,25 +130,19 @@ const Login = () => {
                           />
                         </div>
 
-                        {/*Password*/}
                         <div className="mt-4">
-                          <label className="font-bold" htmlFor="password">
-                            Password:
-                          </label>
+                          <label className="font-bold" htmlFor="password">Password:</label>
                           <div className="relative">
                             <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                               <FontAwesomeIcon icon={faLock} />
                             </div>
-                            <div className="absolute end-2  right-5 top-1/2 transofrm -translate-y-1/2 z-20">
-                              <FontAwesomeIcon
-                                onClick={() => setShowPassword(!showPassword)}
-                                icon={showPassword ? faEyeSlash : faEye}
-                              />
+                            <div className="absolute end-2 right-5 top-1/2 transform -translate-y-1/2 z-20">
+                              <FontAwesomeIcon onClick={() => setShowPassword(!showPassword)} icon={showPassword ? faEyeSlash : faEye} />
                             </div>
                             <input
                               id="password"
                               name="password"
-                              onChange={(e)=>setPassword(e.target.value)}
+                              onChange={(e) => setPassword(e.target.value)}
                               value={password}
                               type={showPassword ? "text" : "password"}
                               className="ps-8 rounded-lg w-[25vw] py-2 border"
@@ -178,33 +151,29 @@ const Login = () => {
                           </div>
                         </div>
                         <div className="text-[12px] flex justify-end">
-                          <button onClick={(e)=>setShowForgotPass(true,e.preventDefault())} className="text-[#2203AC] underline">Forgot Password</button>
+                          <button onClick={(e) => { e.preventDefault(); setShowForgotPass(true); }} className="text-[#2203AC] underline">Forgot Password</button>
                         </div>
                         <div className="flex justify-center items-center mt-[6%] text-white">
-                          <button
-                            onClick={handleLogin}
-                            
-                            className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
-                          >
-                            {isLoading ? (
-                             <><FontAwesomeIcon className="animate-spin" icon={faSpinner} /></> 
-                            ):(
-                              <>Login</>
-                            )}
+                          <button onClick={handleLogin} className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md">
+                            {isLoading ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : <>Login</>}
                           </button>
                         </div>
                       </div>
                     </form>
                   </div>
                 </div>
-
-                {/*The Background*/}
                 <div>
                   <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
                 </div>
               </div>
             </>
           )}
+          {/* ReCAPTCHA Component */}
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey="6LdR91cqAAAAAJ1uKrSb62NuVKQcIQoIv0Yjt5dy" // Replace with your actual site key
+            size="invisible" // Make it invisible
+          />
         </div>
       </div>
     </div>
