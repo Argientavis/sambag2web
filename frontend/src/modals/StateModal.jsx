@@ -59,7 +59,7 @@ const StateModal = () => {
     };
 
     const handleOffAlarm = async () => {
-        const stateRef = ref(database, 'led/state');
+        const stateRef = ref(database, 'led');
 
         try {
             await update(stateRef, { state: 0 });
