@@ -6,47 +6,25 @@ import './map.css';
 import redIconUrl from '../assets/redicon.png';
 import greenIconUrl from '../assets/greenicon.png';
 import yellowIconUrl from '../assets/yellowicon.png';
-import blueIconUrl from '../assets/blueicon.png'; // New icon for latest reports
+import blueIconUrl from '../assets/blueicon.png'; 
 import responded from '../assets/check.png';
 import notresponded from '../assets/deny.png';
 import { database } from '../Firebase';
 import { push, ref, remove } from "firebase/database";
 
-// Custom icons
-const redIcon = new L.Icon({
-    iconUrl: redIconUrl,
-    iconSize: [42, 40],
-    iconAnchor: [20, 41],
-    popupAnchor: [1, -34],
-});
-
-const greenIcon = new L.Icon({
-    iconUrl: greenIconUrl,
-    iconSize: [42, 40],
-    iconAnchor: [20, 41],
-    popupAnchor: [1, -34],
-});
-
-const yellowIcon = new L.Icon({
-    iconUrl: yellowIconUrl,
-    iconSize: [42, 40],
-    iconAnchor: [20, 41],
-    popupAnchor: [1, -34],
-});
-
-const blueIcon = new L.Icon({ // Blue icon for the latest reports
-    iconUrl: blueIconUrl,
-    iconSize: [42, 40],
-    iconAnchor: [20, 41],
-    popupAnchor: [1, -34],
-});
+// Custom icons setup
+const redIcon = new L.Icon({ iconUrl: redIconUrl, iconSize: [42, 40], iconAnchor: [20, 41], popupAnchor: [1, -34] });
+const greenIcon = new L.Icon({ iconUrl: greenIconUrl, iconSize: [42, 40], iconAnchor: [20, 41], popupAnchor: [1, -34] });
+const yellowIcon = new L.Icon({ iconUrl: yellowIconUrl, iconSize: [42, 40], iconAnchor: [20, 41], popupAnchor: [1, -34] });
+const blueIcon = new L.Icon({ iconUrl: blueIconUrl, iconSize: [42, 40], iconAnchor: [20, 41], popupAnchor: [1, -34] });
 
 const Map = ({ selectedCoordinates, data }) => {
-    const mapRef = useRef(); // Reference to the map instance
+    const mapRef = useRef();
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [selectedReport, setSelectedReport] = useState(null);
-    const [showModal, setShowModal] = useState(false); // State for showing modal
-    const [latestReport, setLatestReport] = useState(null); // State for latest report
+    const [showModal, setShowModal] = useState(false);
+    const [latestReport, setLatestReport] = useState(null);
+    const [shownReportIds, setShownReportIds] = useState([]); // New state for shown report IDs
 
     useEffect(() => {
         if (selectedCoordinates && mapRef.current) {
@@ -54,8 +32,6 @@ const Map = ({ selectedCoordinates, data }) => {
 
             if (latitude && longitude) {
                 setSelectedMarker({ latitude, longitude });
-
-                // Move the map to the selected coordinates
                 mapRef.current.flyTo([latitude, longitude], 17);
 
                 const matchedReport = data.find(report => {
@@ -70,9 +46,15 @@ const Map = ({ selectedCoordinates, data }) => {
 
     useEffect(() => {
         if (data.length > 0) {
-            const latestReportData = data[0]; // Assuming the data is sorted, get the latest report
-            setLatestReport(latestReportData);
-            setShowModal(false); // Show modal for latest report
+            const latestReportData = data[0];
+            const isNewReport = isToday(latestReportData.timestamp);
+
+            // Show modal only if it's a new report and has not been shown before
+            if (isNewReport && !shownReportIds.includes(latestReportData.id)) {
+                setLatestReport(latestReportData);
+                setShowModal(true);
+                setShownReportIds(prevIds => [...prevIds, latestReportData.id]); // Add the ID to shown report IDs
+            }
         }
     }, [data]);
 
@@ -83,12 +65,11 @@ const Map = ({ selectedCoordinates, data }) => {
     };
 
     const handleSuccess = async (success) => {
+       
         if (!selectedReport || !selectedReport.id) {
             console.warn("Selected report is not valid or missing ID.");
             return;
         }
-
-        console.log("Deleting report with ID:", selectedReport.id);
 
         try {
             const historyRef = ref(database, 'History');
@@ -97,6 +78,7 @@ const Map = ({ selectedCoordinates, data }) => {
                 contact: selectedReport.contact,
                 type: selectedReport.type,
                 location: selectedReport.location,
+                timestamp: selectedReport.timestamp,
                 success: success ? "Yes" : "No"
             };
             await push(historyRef, dataToPush);
@@ -104,7 +86,7 @@ const Map = ({ selectedCoordinates, data }) => {
             const reportRef = ref(database, `led/reports/${selectedReport.id}`);
             await remove(reportRef);
             console.log("Report deleted successfully");
-            window.location.reload();
+            
         } catch (error) {
             console.error("Error pushing data to database: ", error);
         }
@@ -123,11 +105,11 @@ const Map = ({ selectedCoordinates, data }) => {
     return (
         <div className="relative w-full h-full">
             <MapContainer
-                className="leaflet_container z-0 w-full h-full lg:h-[calc(100vh-120px)]" // Responsive height adjustments for different screen sizes
+                className="leaflet_container z-0 w-full h-full lg:h-[calc(100vh-120px)]"
                 center={[10.3058, 123.8910]}
                 zoom={17}
                 scrollWheelZoom={true}
-                ref={mapRef} // Attach ref to the map container
+                ref={mapRef}
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -137,17 +119,16 @@ const Map = ({ selectedCoordinates, data }) => {
                     const location = parseLocation(report.location);
                     if (!location) return null;
 
-                    // Determine which icon to use
+                    let markerIcon;
                     const reportDate = new Date(report.timestamp);
                     const currentDate = new Date();
-                    let markerIcon;
 
                     if (isToday(report.timestamp)) {
-                        markerIcon = blueIcon; // Latest reports with today's date (blue color)
+                        markerIcon = blueIcon;
                     } else if (reportDate > currentDate) {
-                        markerIcon = redIcon; // New reports (future-dated)
+                        markerIcon = redIcon;
                     } else {
-                        markerIcon = yellowIcon; // Old reports
+                        markerIcon = yellowIcon;
                     }
 
                     return !(selectedMarker && selectedMarker.latitude === location.latitude && selectedMarker.longitude === location.longitude) ? (
@@ -170,7 +151,7 @@ const Map = ({ selectedCoordinates, data }) => {
                 {selectedMarker && selectedReport && (
                     <Marker key="selected-marker" position={[selectedMarker.latitude, selectedMarker.longitude]} icon={redIcon}>
                         <Popup>
-                            <div className="">
+                            <div>
                                 <div>Clicked Coordinates: {selectedMarker.latitude}, {selectedMarker.longitude}</div>
                                 <h4>Name: {selectedReport.name}</h4>
                                 <h4>Type: {selectedReport.type}</h4>
@@ -185,22 +166,6 @@ const Map = ({ selectedCoordinates, data }) => {
                     </Marker>
                 )}
             </MapContainer>
-
-            {/* Modal for Latest Report, displayed as an overlay on top of the map */}
-            {latestReport && showModal && (
-                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-50 bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded shadow-md w-[90%] max-w-md">
-                        <h2 className="text-lg font-bold mb-2">Latest Report</h2>
-                        <h4>Name: {latestReport.name}</h4>
-                        <h4>Type: {latestReport.type}</h4>
-                        <h4>Contact: {latestReport.contact}</h4>
-                        <img className="h-[2%] w-[2%] my-2" src={latestReport.imageUrl} alt="Latest Report" />
-                        <div className="flex justify-end mt-2">
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-red-500 text-white rounded">Close</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -12,11 +12,33 @@ import thief from '../../assets/thief.png';
 import noise from '../../assets/noise.png';
 import StateModal from "../../modals/StateModal";
 import axios from "axios";
+import { throttle } from 'lodash';
 
 const MapDashboard = () => {
     const [data, setData] = useState([]);
     const [selectedCoordinates, setSelectedCoordinates] = useState(null);
     const [analytics, setShowAnalytics] = useState(false);
+    const addressCache = {}; // Caching the addresses
+
+    const fetchAddress = throttle(async (latitude, longitude) => {
+        const cacheKey = `${latitude},${longitude}`;
+        if (addressCache[cacheKey]) return addressCache[cacheKey];
+
+        try {
+            const response = await axios.get(
+                `https://us1.locationiq.com/v1/reverse.php?key=pk.247696ba66ee834343af9d1e99f35831&lat=${latitude}&lon=${longitude}&format=json`
+            );
+            addressCache[cacheKey] = response.data.display_name || "Address not available";
+        } catch (error) {
+            if (error.response && error.response.status === 429) {
+                console.error('Rate limit exceeded, retrying...');
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+                return fetchAddress(latitude, longitude); // Retry fetching
+            }
+            addressCache[cacheKey] = "Address not available";
+        }
+        return addressCache[cacheKey];
+    }, 1000); // Adjust time as necessary
 
     const fetchData = async () => {
         const reportRef = ref(database, 'led/reports');
@@ -26,7 +48,7 @@ const MapDashboard = () => {
             const reportsWithId = reportData ? Object.entries(reportData).map(([id, report]) => ({ id, ...report })) : [];
 
             reportsWithId.sort((a, b) => {
-                const dateA = new Date(a.timestamp); 
+                const dateA = new Date(a.timestamp);
                 const dateB = new Date(b.timestamp);
                 return dateB - dateA; // Newest first
             });
@@ -48,18 +70,7 @@ const MapDashboard = () => {
 
                 const location = parseLocation(report.location);
                 if (location) {
-                    try {
-                        const response = await axios.get(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}`
-                        );
-                        if (response.data && response.data.display_name) {
-                            report.address = response.data.display_name;
-                        } else {
-                            report.address = "Address not available";
-                        }
-                    } catch (error) {
-                        report.address = "Address not available";
-                    }
+                    report.address = await fetchAddress(location.latitude, location.longitude);
                 } else {
                     report.address = "Location not available";
                 }
@@ -95,8 +106,8 @@ const MapDashboard = () => {
                     <h1 className="flex justify-center items-center text-xl bg-[#8A252C] text-white py-2.5">
                         Today's Report
                     </h1>
-                     {/* Color Indicator Section - Updated to Two-by-Two Grid */}
-                     <div className="p-2 bg-white border-b border-gray-300">
+                    {/* Color Indicator Section - Updated to Two-by-Two Grid */}
+                    <div className="p-2 bg-white border-b border-gray-300">
                         <h2 className="text-sm font-semibold mb-2">Marker Color Indicators:</h2>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="flex items-center mb-1">
@@ -162,7 +173,6 @@ const MapDashboard = () => {
 
                 <div className="flex-1 bg-white flex flex-col">
                     <div className="w-full bg-[#8A252C] flex flex-row divide-x divide-white">
-                        <button className="flex-1 py-3 text-center text-white">Today's Report</button>
                         <Link to='/history' className="flex-1">
                             <button className="w-full py-3 text-center text-white">History</button>
                         </Link>
@@ -176,13 +186,12 @@ const MapDashboard = () => {
                             <Link to='/monthly-analytics'>
                                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Monthly Reports</button>
                             </Link>
-                
                             <Link to='/yearly-analytics'>
                                 <button className='shadow rounded-sm hover:bg-[#A53400] w-full hover:text-white'>Yearly Reports</button>
                             </Link>
                         </div>
                     )}
-                     <StateModal />
+                    <StateModal />
                     <div className="flex-grow overflow-hidden">
                         <Map selectedCoordinates={selectedCoordinates} data={data} />
                     </div>

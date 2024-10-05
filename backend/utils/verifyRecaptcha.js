@@ -2,7 +2,7 @@ const axios = require('axios');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+const RECAPTCHA_SECRET_KEY = "6LdR91cqAAAAAN1dgH17coR0Rbc3B0hWBNhx_Wuf";
 
 const verifyRecaptcha = async (token) => {
   try {
