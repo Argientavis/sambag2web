@@ -5,6 +5,8 @@ const {
   generateAccessToken,
   generateTokenAndSetCookies,
 } = require("../utils/generateTokenAndSetToken.js");
+const { verifyRecaptcha } = require('../utils/verifyRecaptcha.js');
+
 
 const signup = async (req, res) => {
   const { username, password, email, role } = req.body;
@@ -62,39 +64,43 @@ const signup = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, recaptchaToken } = req.body;
+
+  const isCaptchaValid = await verifyRecaptcha(recaptchaToken);
+  if (!isCaptchaValid) {
+      console.error("ReCAPTCHA validation failed.");
+      return res.status(400).json({ success: false, message: "Invalid reCAPTCHA" });
+  }
+
   try {
-    if (!idToken) {
-      return res
-        .status(400)
-        .json({ success: false, message: "ID token is required" });
-    }
+      if (!idToken) {
+          return res.status(400).json({ success: false, message: "ID token is required" });
+      }
 
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const userId = decodedToken.uid;
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const userId = decodedToken.uid;
 
-    const userSnapshot = await database.ref(`Users/${userId}`).once("value");
-    if (!userSnapshot.exists()) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
+      const userSnapshot = await database.ref(`Users/${userId}`).once("value");
+      if (!userSnapshot.exists()) {
+          return res.status(404).json({ success: false, message: "User not found" });
+      }
 
-    const userData = userSnapshot.val();
+      const userData = userSnapshot.val();
 
-    const accessToken = generateTokenAndSetCookies(res, userId);
+      const accessToken = generateTokenAndSetCookies(res, userId);
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Login successful",
-        user: userData,
-        accessToken,
+      res.status(200).json({
+          success: true,
+          message: "Login successful",
+          user: userData,
+          accessToken,
       });
   } catch (error) {
-    console.error("Error during login:", error.message);
-    res.status(500).json({ success: false, message: "Invalid ID token" });
+      console.error("Error during login:", error.message);
+      if (error.code === 'auth/id-token-expired') {
+          return res.status(401).json({ success: false, message: "ID token expired" });
+      }
+      res.status(500).json({ success: false, message: "An error occurred during login" });
   }
 };
 

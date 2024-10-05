@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import brgysambag from "../assets/backgroundImage.png";
 import alert from "../assets/alarm.png";
+<<<<<<< HEAD
 import backgroundLogin from '../assets/backgroundLogin.png';
 import forgotPassImage from '../assets/forgotPass.png';
 import {
@@ -12,8 +13,15 @@ import {
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+=======
+import backgroundLogin from '../assets/backgroundLogin.png'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import forgotPassImage from '../assets/forgotPass.png'
+import { faEye, faEyeSlash, faEnvelope, faUser, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
 import { useAuthStore } from "../Frontend-auth/auth.controller";
 import { useNavigate } from "react-router-dom";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const Login = () => {
   const [showForgotPass, setShowForgotPass] = useState(false);
@@ -21,9 +29,10 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const recaptchaRef = useRef();
 
+<<<<<<< HEAD
   const { forLogin, isLoading, error, role, forForgotPass } = useAuthStore();
 
   const handleLogin = async (e) => {
@@ -61,6 +70,35 @@ const Login = () => {
       alert('Sent email for reset password successfully');
       setEmail('');
       setShowForgotPass(false);
+=======
+  const { forLogin, isLoading, error, forForgotPass } = useAuthStore();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    // Check if recaptchaRef is available
+    if (recaptchaRef.current) {
+      const recaptchaToken = await recaptchaRef.current.executeAsync();
+      recaptchaRef.current.reset();
+      
+      // Pass the recaptchaToken to your login function
+      const result = await forLogin(username, password, recaptchaToken); // Ensure forLogin accepts recaptchaToken
+      if (result?.success) {
+        alert('Login Successfully');
+      } else {
+        console.error(error);
+      }
+    }
+  };
+
+  const resetPasswordHandler = async (e) => {
+    e.preventDefault();
+    const result = await forForgotPass(email);
+    if (result?.success) {
+      alert('Sent email for reset password successfully');
+      setEmail(''); 
+      setShowForgotPass(false); 
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
     } else {
       alert('Failed to send password reset email. Please try again.');
     }
@@ -69,11 +107,7 @@ const Login = () => {
   return (
     <div className="overflow-hidden h-screen">
       <div className="relative flex justify-center items-center h-screen">
-        <img
-          className="bg-cover w-full h-full absolute brightness-75"
-          src={brgysambag}
-          alt=""
-        />
+        <img className="bg-cover w-full h-full absolute brightness-75" src={brgysambag} alt="" />
         <div className="h-[90%] w-[60%] rounded-lg bg-[#FFF6F0] relative">
           <div className="flex justify-center"></div>
           {showForgotPass ? (
@@ -89,9 +123,13 @@ const Login = () => {
                     </div>
                     <form name="login">
                       <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
+<<<<<<< HEAD
                         <label className="font-bold" htmlFor="email">
                           Email:
                         </label>
+=======
+                        <label className="font-bold" htmlFor="email">Email:</label>
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                         <div className="relative">
                           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                             <FontAwesomeIcon icon={faEnvelope} />
@@ -104,7 +142,6 @@ const Login = () => {
                             className="ps-8 rounded-lg w-[25vw] py-2 border"
                           />
                         </div>
-
                         <div className="text-[12px] flex justify-end">
                           <button className="text-[#2203AC] underline" onClick={() => setShowForgotPass(false)}>Log in</button>
                         </div>
@@ -113,18 +150,25 @@ const Login = () => {
                             onClick={resetPasswordHandler}
                             className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
                           >
+<<<<<<< HEAD
                             {isLoading ? (
                               <><FontAwesomeIcon className="animate-spin" icon={faSpinner} /></>
                             ) : (
                               <>Submit</>
                             )}
+=======
+                            {isLoading ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : <>Submit</>}
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                           </button>
                         </div>
                       </div>
                     </form>
                   </div>
                 </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                 <div>
                   <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
                 </div>
@@ -142,9 +186,13 @@ const Login = () => {
                     </div>
                     <form name="login">
                       <div className="mt-[10%] flex flex-col h-[2vh] gap-1">
+<<<<<<< HEAD
                         <label className="font-bold" htmlFor="username">
                           Username:
                         </label>
+=======
+                        <label className="font-bold" htmlFor="username">Username:</label>
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                         <div className="relative">
                           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                             <FontAwesomeIcon icon={faUser} />
@@ -161,18 +209,21 @@ const Login = () => {
                         </div>
 
                         <div className="mt-4">
-                          <label className="font-bold" htmlFor="password">
-                            Password:
-                          </label>
+                          <label className="font-bold" htmlFor="password">Password:</label>
                           <div className="relative">
                             <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">
                               <FontAwesomeIcon icon={faLock} />
                             </div>
+<<<<<<< HEAD
                             <div className="absolute end-2 right-5 top-1/2 transofrm -translate-y-1/2 z-20">
                               <FontAwesomeIcon
                                 onClick={togglePasswordVisibility}
                                 icon={showPassword ? faEyeSlash : faEye}
                               />
+=======
+                            <div className="absolute end-2 right-5 top-1/2 transform -translate-y-1/2 z-20">
+                              <FontAwesomeIcon onClick={() => setShowPassword(!showPassword)} icon={showPassword ? faEyeSlash : faEye} />
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                             </div>
                             <input
                               id="password"
@@ -186,6 +237,7 @@ const Login = () => {
                           </div>
                         </div>
                         <div className="text-[12px] flex justify-end">
+<<<<<<< HEAD
                           <button onClick={(e) => setShowForgotPass(true, e.preventDefault())} className="text-[#2203AC] underline">Forgot Password</button>
                         </div>
                         <div className="flex justify-center items-center mt-[6%] text-white">
@@ -198,19 +250,35 @@ const Login = () => {
                             ) : (
                               <>Login</>
                             )}
+=======
+                          <button onClick={(e) => { e.preventDefault(); setShowForgotPass(true); }} className="text-[#2203AC] underline">Forgot Password</button>
+                        </div>
+                        <div className="flex justify-center items-center mt-[6%] text-white">
+                          <button onClick={handleLogin} className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md">
+                            {isLoading ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : <>Login</>}
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                           </button>
                         </div>
                       </div>
                     </form>
                   </div>
                 </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> de383adc5e34fc6a3f8834cd84e12a93789d2569
                 <div>
                   <img className="h-[90vh] w-[100%] rounded-lg" src={backgroundLogin} alt="" />
                 </div>
               </div>
             </>
           )}
+          {/* ReCAPTCHA Component */}
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey="6LdR91cqAAAAAJ1uKrSb62NuVKQcIQoIv0Yjt5dy" // Replace with your actual site key
+            size="invisible" // Make it invisible
+          />
         </div>
       </div>
     </div>

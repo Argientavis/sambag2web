@@ -94,7 +94,7 @@ const MonthlyAnalytics = () => {
       {
         label: 'Accident',
         data: accidentCounts,
-        borderColor: 'rgba(75, 192, 192, 1)',
+        borderColor: 'rgba(75, 193, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,
         tension: 0.4,

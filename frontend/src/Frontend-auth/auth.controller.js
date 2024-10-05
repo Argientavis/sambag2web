@@ -56,22 +56,23 @@ export const useAuthStore = create((set) => ({
         }
     },
 
-    forLogin: async (username, password) => {
+    forLogin: async (username, password, recaptchaToken) => {
         set({ error: null, isLoading: true });
         try {
             const usernameSnapshot = await get(
                 query(ref(database, "Users"), orderByChild("username"), equalTo(username))
             );
-
+    
             if (usernameSnapshot.exists()) {
                 const userData = usernameSnapshot.val();
                 const email = Object.values(userData)[0].email;
-
+    
                 const userCredentials = await signInWithEmailAndPassword(auth, email, password);
                 const idToken = await userCredentials.user.getIdToken();
-
-                const response = await axios.post(`${API_URL}/login`, { idToken }, { withCredentials: true });
-
+               
+    
+                const response = await axios.post(`${API_URL}/login`, { idToken, recaptchaToken }, { withCredentials: true });
+    
                 if (response.data.success) {
                     const role = Object.values(userData)[0].role;
                     set({
@@ -90,19 +91,19 @@ export const useAuthStore = create((set) => ({
                 throw new Error("Username does not exist");
             }
         } catch (error) {
-            console.error("Error signing in:", error.message);
-            let errorMessage = "An unknown error occurred"; 
+            console.error("Error signing in:", error.response ? error.response.data : error.message);
+            let errorMessage = "An unknown error occurred";
     
-
             if (error.code === "auth/missing-password") {
-                errorMessage = "Invalid password"; 
+                errorMessage = "Invalid password";
             } else if (error.code === "auth/user-not-found") {
-                errorMessage = "User not found"; 
+                errorMessage = "User not found";
             }
     
             set({ error: errorMessage, isLoading: false });
         }
     },
+    
     signup: async (username, email, password, role) => {
         set({ error: null, isLoading: true });
         try {
