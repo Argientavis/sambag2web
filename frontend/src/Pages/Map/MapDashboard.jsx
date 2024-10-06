@@ -13,6 +13,8 @@ import noise from '../../assets/noise.png';
 import StateModal from "../../modals/StateModal";
 import axios from "axios";
 import { throttle } from 'lodash';
+import accident from '../../assets/accident.png'
+import others from '../../assets/others.png' 
 
 const MapDashboard = () => {
     const [data, setData] = useState([]);
@@ -142,12 +144,16 @@ const MapDashboard = () => {
                                         incidentImage = thief;
                                     } else if (report.type === 'NOISE') {
                                         incidentImage = noise;
+                                    }else if (report.type === 'ACCIDENT'){
+                                        incidentImage = accident;
+                                    }else if (report.type === 'OTHERS'){
+                                        incidentImage = others;
                                     }
 
                                     return (
                                         <div key={index} className="grid grid-cols-4 gap-2 bg-[#FFF6F0] border-b border-[#000000] border-opacity-30 p-2">
-                                            <img className="w-full h-auto col-span-1" src={report.imageUrl} alt="Report" />
-                                            <div className="col-span-3 flex flex-col justify-center ps-6">
+                                            <div className="flex justify-center items-center"><img className="w-full h-[100%] col-span-1" src={report.imageUrl} alt="Report" /></div>
+                                            <div className="col-span-2 flex flex-col justify-center ps-6">
                                                 <h1 className="font-bold">
                                                     {location ? (
                                                         <span
@@ -159,9 +165,14 @@ const MapDashboard = () => {
                                                     ) : "Location not available"}
                                                     <br />
                                                     <p className="text-[8px] font-medium">File Emergency - {dateFormat(report.timestamp)}</p>
+                                                    <p className="text-[9px] font-bold">Name: {report.name}</p>
+                                                    <p className="text-[9px] font-bold">Contact: {report.contact}</p>
+                                                    
                                                 </h1>
                                             </div>
+                                           <div className="flex justify-center items-center"><img className="h-28" src={incidentImage} alt={report.type} /></div>
                                         </div>
+                                        
                                     );
                                 })}
                             </div>
