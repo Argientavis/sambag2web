@@ -8,14 +8,9 @@ dotenv.config();
 
 const app = express();
 
-// Enable CORS
-const corsOptions = {
-    origin: ["https://sambag2.vercel.app"], 
-    methods:["POST","GET],
-    credentials: true 
-};
 
-app.use(cors(corsOptions));
+app.use(cors());
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", authRoutes);
