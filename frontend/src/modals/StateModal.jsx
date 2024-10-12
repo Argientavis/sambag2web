@@ -74,19 +74,19 @@ const StateModal = () => {
     return (
         <div className={`${state > 0 ? 'fixed w-[75%] h-screen z-50 flex justify-center items-center bg-black bg-opacity-50' : ''}`}>
             {state > 0 && latestReport && (
-                <div className='bg-white p-4 rounded shadow-lg flex flex-col gap-4 w-[30%]'>
+                <div className='bg-white p-3 rounded shadow-lg flex flex-col gap-4 w-[30%] mb-20'>
                     <p className='flex justify-center items-center text-sm'>New report</p>
                     {latestReport.imageUrl && (
-                        <img className="w-full h-auto" src={latestReport.imageUrl} alt="Report" />
+                        <img className="h-[25vh] w-[20vw] " src={latestReport.imageUrl} alt="Report" />
                     )}
                     {locationDetails && (
                         <div>
                             <p className='text-sm'>Location: {locationDetails.display_name}</p>
                         </div>
                     )}
-                    <div className='flex gap-4'>
-                    <p className='flex'>Type:&nbsp;<h1 className='font-serif'>{latestReport.type}</h1></p>
-                    <p className='flex'>Name:&nbsp;<h1 className='font-serif'>{latestReport.name}</h1></p>
+                    <div className='grid grid-cols-2 gap-3'>
+                    <p className='flex'>Type:&nbsp;<h5 className='font-serif'>{latestReport.type}</h5></p>
+                    <p className='flex'>Name:&nbsp;<h5 className='font-serif'>{latestReport.name}</h5></p>
                     <p className='flex'>Contact:&nbsp;<h1 className='font-serif'>{latestReport.contact}</h1></p>
                     </div>
                     <button onClick={handleOffAlarm} className='bg-[#8A252C] text-white rounded-md'>Off Alarm</button>
