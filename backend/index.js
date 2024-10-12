@@ -10,7 +10,7 @@ const app = express();
 
 // Enable CORS
 const corsOptions = {
-    origin: "https://sambag2.vercel.app", 
+    origin: ["https://sambag2.vercel.app"], 
     credentials: true 
 };
 
