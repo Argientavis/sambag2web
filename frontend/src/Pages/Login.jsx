@@ -120,7 +120,7 @@ const Login = () => {
                       <div className="flex justify-center items-center mt-[6%] text-white">
                         <button
                           onClick={resetPasswordHandler}
-                          className="bg-[#8A252C] py-1 px-1 w-[30%] rounded-md"
+                          className="bg-[#8A252C] py-1 px-1 w-[35%] rounded-md"
                         >
                           {isLoading ? <FontAwesomeIcon className="animate-spin" icon={faSpinner} /> : <>Submit</>}
                         </button>
@@ -194,7 +194,7 @@ const Login = () => {
                         <button
                           disabled={isLoading}
                           onClick={handleLogin}
-                          className={`bg-[#8A252C] py-1 px-1 w-[30%] rounded-md ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                          className={`bg-[#8A252C] py-1 px-1 w-[40%] h-[40px] rounded-md ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           {isLoading ? (
                             <FontAwesomeIcon className="animate-spin" icon={faSpinner} />

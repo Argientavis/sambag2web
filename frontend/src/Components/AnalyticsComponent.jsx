@@ -7,21 +7,21 @@ import { Link } from 'react-router-dom'
 const AnalyticsComponent = () => {
 const [analytics,setShowAnalytics] = useState(false)
   return (
-    <div>
+    <div >
         <Navbar/>
         <div className='grid grid-cols-3'>
             <a className='bg-[#8A252C] flex justify-center items-center text-white py-3' href="/map-dashboard"><h1 className=''>Reports</h1></a>
-          <Link to='/history'><button className='bg-[#801B22] text-white border-r w-full py-3 border-white border-opacity-50'>History</button></Link>
-          <div className='bg-[#801B22] text-white flex justify-center items-center gap-3 relative'>
+            <div className='bg-[#801B22] text-white flex justify-center items-center gap-3 relative'>
           <button className='flex gap-2' onClick={()=>setShowAnalytics(!analytics)}>
             <h1><FontAwesomeIcon icon={faChartSimple}/> Analytics</h1>
             <h1><FontAwesomeIcon icon={faCaretUp} className='h-3'/></h1>
           </button>
           </div>
+          <Link to='/history'><button className='bg-[#801B22] text-white border-r w-full py-3 border-white border-opacity-50'>History</button></Link>
+        
         </div>
         {analytics &&(
           <div className='grid grid-cols-3'>
-            <div></div>
             <div></div>
             <div className=' grid grid-rows-2 bg-white shadow-md'>
               <Link to='/monthly-analytics'>

@@ -89,6 +89,11 @@ const Map = ({ selectedCoordinates, data }) => {
         location: selectedReport.location,
         timestamp: selectedReport.timestamp,
         success: success ? "Yes" : "No",
+        deviceId:selectedReport.deviceId,
+        imageUrl:selectedReport.imageUrl,
+        reportId:selectedReport.reportId
+
+
       };
       await push(historyRef, dataToPush);
 

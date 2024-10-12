@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import AnalyticsComponent from '../../Components/AnalyticsComponent';
-import { Line } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import { database } from '../../Firebase';
 import { ref, get } from 'firebase/database';
-import { Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, ChartDataLabels);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
-const AnnualAnalytics = () => {
+const MonthlyAnalytics = () => {
   const [data, setData] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [totalReports, setTotalReports] = useState(0);
+  const [resolvedReports, setResolvedReports] = useState(0);
+  const [unresolvedReports, setUnresolvedReports] = useState(0);
+  const [severityStats, setSeverityStats] = useState({ high: 0, medium: 0, low: 0 });
+  const [reportStats, setReportStats] = useState({ fire: 0, theft: 0, noise: 0, accident: 0 });
 
-  const fetchData = async () => {
+  const fetchData = async (month, year) => {
     const reportRef = ref(database, 'led/reports');
 
     try {
@@ -20,26 +26,43 @@ const AnnualAnalytics = () => {
 
       if (reportData) {
         const reportList = Object.values(reportData);
-        const currentYear = new Date().getFullYear();
-
-        const monthlyCounts = Array(12).fill().map(() => ({
-          NOISE: 0,
-          THIEF: 0,
-          FIRE: 0,
-          ACCIDENT: 0,  // Add ACCIDENT here
-        }));
+        let fireCount = 0, theftCount = 0, noiseCount = 0, accidentCount = 0;
+        let totalCount = 0;
+        let resolvedCount = 0;
+        let unresolvedCount = 0;
+        let highSeverityCount = 0, mediumSeverityCount = 0, lowSeverityCount = 0;
 
         reportList.forEach(report => {
           const reportDate = new Date(report.timestamp);
-          const reportYear = reportDate.getFullYear();
-          const reportMonth = reportDate.getMonth();
+          if (reportDate.getMonth() === month && reportDate.getFullYear() === year) {
+            totalCount++;  // Count the total number of reports for the month
 
-          if (reportYear === currentYear) {
-            monthlyCounts[reportMonth][report.type] += 1;
+            // Count types of incidents
+            if (report.type === 'FIRE') fireCount++;
+            else if (report.type === 'THIEF') theftCount++;
+            else if (report.type === 'NOISE') noiseCount++;
+            else if (report.type === 'ACCIDENT') accidentCount++;
+
+            // Count resolution status
+            if (report.resolved) {
+              resolvedCount++;  // Assuming 'resolved' is a boolean in the report data
+            } else {
+              unresolvedCount++;
+            }
+
+            // Count incident severity
+            if (report.severity === 'HIGH') highSeverityCount++;
+            else if (report.severity === 'MEDIUM') mediumSeverityCount++;
+            else if (report.severity === 'LOW') lowSeverityCount++;
           }
         });
 
-        setData(monthlyCounts);
+        // Update state
+        setReportStats({ fire: fireCount, theft: theftCount, noise: noiseCount, accident: accidentCount });
+        setTotalReports(totalCount);
+        setResolvedReports(resolvedCount);
+        setUnresolvedReports(unresolvedCount);
+        setSeverityStats({ high: highSeverityCount, medium: mediumSeverityCount, low: lowSeverityCount });
       }
     } catch (error) {
       console.error('Error fetching data', error);
@@ -47,89 +70,93 @@ const AnnualAnalytics = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(currentMonth, currentYear);
+  }, [currentMonth, currentYear]);
 
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const currentYear = new Date().getFullYear();
 
-  const chartLabels = monthNames;
-  const noiseCounts = data.map(month => month.NOISE);
-  const thiefCounts = data.map(month => month.THIEF);
-  const fireCounts = data.map(month => month.FIRE);
-  const accidentCounts = data.map(month => month.ACCIDENT);  // Extract ACCIDENT counts
-
-  const chartData = {
-    labels: chartLabels,
-    datasets: [
-      {
-        label: 'Noise',
-        data: noiseCounts,
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Thief',
-        data: thiefCounts,
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Fire',
-        data: fireCounts,
-        borderColor: 'rgba(255, 206, 86, 1)',
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Accident',
-        data: accidentCounts,
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-    ],
+  const barData = {
+    labels: ['Fire', 'Theft', 'Noise', 'Accident'],
+    datasets: [{
+      label: 'Total Reports',
+      data: [reportStats.fire, reportStats.theft, reportStats.noise, reportStats.accident],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+    }]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  // Pie chart for resolution status based on fetched data
+  const resolutionPieData = {
+    labels: ['Resolved', 'Unresolved'],
+    datasets: [{
+      data: [resolvedReports, unresolvedReports],
+      backgroundColor: ['#36A2EB', '#FF6384'],
+    }]
+  };
+
+  // Pie chart for incident severity based on fetched data
+  const severityPieData = {
+    labels: ['High Severity', 'Medium Severity', 'Low Severity'],
+    datasets: [{
+      data: [severityStats.high, severityStats.medium, severityStats.low],
+      backgroundColor: ['#FF6384', '#FFCD56', '#4BC0C0'],
+    }]
+  };
+
+  const pieOptions = {
     plugins: {
       legend: {
-        position: 'top',
-      },
-      datalabels: {
-        formatter: (value, context) => {
-          const total = noiseCounts.reduce((a, b) => a + b, 0) +
-                        thiefCounts.reduce((a, b) => a + b, 0) +
-                        fireCounts.reduce((a, b) => a + b, 0) +
-                        accidentCounts.reduce((a, b) => a + b, 0);  // Include ACCIDENT in total
-          const percentage = total ? ((value / total) * 100).toFixed(2) + '%' : '0%';
-          return percentage;
-        },
-        color: '#8F1213',
+        position: 'bottom',
       },
     },
   };
 
   return (
-    <div>
-      <AnalyticsComponent />
-      <div className='px-16 mt-4'>
-        <h1 className='text-2xl font-bold'>Annual Report</h1>
-        <h2 className='text-xl'>Monthly Breakdown for {currentYear}</h2>
-      </div>
-      <div className='mb-10' style={{ width: '100%', height: '300px', paddingLeft: '2rem', paddingRight: '2rem' }}>
-        <Line data={chartData} options={options} />
+    <div className="min-h-screen bg-[#F8F8F8] p-8">
+      {/* Top Navbar */}
+      <nav className="bg-[#8A252C] text-white px-6 py-4 flex justify-between items-center">
+        <div className="flex items-center">
+          <h1 className="text-2xl font-bold">ALERT SYSTEM</h1>
+        </div>
+        <div className="flex space-x-4">
+          <button className="text-white">Today's Report</button>
+          <button className="text-white">History</button>
+          <button className="text-white">Monthly</button>
+        </div>
+      </nav>
+
+      {/* Main Section: Bar Chart and Sidebar */}
+      <div className="flex mt-8">
+        {/* Left Section: Bar Chart */}
+        <div className="flex-1 pr-8">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-bold mb-4">Report Rate This Month</h2>
+            <Bar data={barData} />
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="w-[300px] flex flex-col space-y-6">
+          {/* Total Reports */}
+          <div className="bg-[#8A252C] text-white p-6 rounded-lg shadow-md text-center">
+            <h2 className="text-xl font-bold">Total Reports</h2>
+            <p className="text-6xl font-bold">{totalReports}</p> {/* Dynamic data */}
+          </div>
+
+          {/* Resolution Status */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-bold mb-4">Resolution Status</h2>
+            <Pie data={resolutionPieData} options={pieOptions} />
+          </div>
+
+          {/* Incident Severity */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-bold mb-4">Incident Severity</h2>
+            <Pie data={severityPieData} options={pieOptions} />
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default AnnualAnalytics;
+export default MonthlyAnalytics;
