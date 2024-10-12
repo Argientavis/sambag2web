@@ -26,6 +26,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-export-table-to-excel": "^1.0.6",
+    "react-google-recaptcha": "^3.1.0",
     "react-headroom": "^3.2.1",
     "react-leaflet": "^4.2.1",
     "react-paginate": "^8.2.0",
