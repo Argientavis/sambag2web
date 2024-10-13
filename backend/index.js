@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth.routes'); // Adjust the path as necessary
 
+
 dotenv.config();
 
 const app = express();
