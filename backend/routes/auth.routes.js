@@ -6,7 +6,10 @@ const router = express.Router();
 // Define the routes
 router.get('/check-auth', verificationToken, checkAuth);
 router.post('/signup', signup);
-router.post('/login', login); // Ensure this route is correctly defined
+router.post('/login', (req, res) => {
+    console.log("Login endpoint hit"); // Log when the endpoint is accessed
+    login(req, res);
+});
 router.post('/logout', logout);
 
 // Export the router
