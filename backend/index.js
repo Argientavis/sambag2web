@@ -9,6 +9,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors({ origin: 'https://sambag2.vercel.app', credentials: true }));
+app.options('*', cors());
+
 
 app.use(express.json());
 app.use(cookieParser());
