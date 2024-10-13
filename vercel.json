@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/index.js" // Adjust this to point to your main server file
+      "dest": "/backend/index.js"
     }
   ],
   "headers": [
