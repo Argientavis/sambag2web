@@ -1,9 +1,11 @@
 {
   "name": "sambag2-firebase",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "backend/index.js", // Update to your main server file
   "scripts": {
-    "devStart": "nodemon backend/index.js"
+    "devStart": "nodemon backend/index.js", // Development command
+    "start": "node backend/index.js", // Production start command
+    "vercel-build": "npm install" // Build command for Vercel
   },
   "keywords": [],
   "author": "",
