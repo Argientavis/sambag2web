@@ -13,7 +13,7 @@ app.use(cors({ origin: 'https://sambag2.vercel.app', credentials: true }));
 app.options('*', cors());
 
 // Base route for the API
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Hello, welcome to the API!");
 });
 
