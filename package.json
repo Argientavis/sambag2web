@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "backend/api/index.js", 
   "scripts": {
-    "devStart": "nodemon backend/api/index.js",
+    "devStart": "nodemon backend/api/index.js", 
     "start": "node backend/api/index.js",
     "vercel-build": "npm install"
   },
@@ -21,9 +21,7 @@
     "firebase-admin": "^12.5.0",
     "jsonwebtoken": "^9.0.2",
     "mailtrap": "^3.4.0",
+    "nodemon": "^3.1.7",
     "react-google-recaptcha": "^3.1.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.7" 
   }
 }
