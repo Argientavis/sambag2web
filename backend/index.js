@@ -11,6 +11,9 @@ const app = express();
 app.use(cors({ origin: 'https://sambag2.vercel.app', credentials: true }));
 app.options('*', cors());
 
+app.get("/", (req, res) => {
+  res.send("Hello, welcome to the API!"); // Send a welcome message
+});
 
 app.use(express.json());
 app.use(cookieParser());
