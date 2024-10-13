@@ -66,7 +66,9 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   const { idToken, recaptchaToken } = req.body;
 
-  const isCaptchaValid = await verifyRecaptcha(recaptchaToken);
+  res.send("Hello");
+
+  /*const isCaptchaValid = await verifyRecaptcha(recaptchaToken);
   if (!isCaptchaValid) {
       console.error("ReCAPTCHA validation failed.");
       return res.status(400).json({ success: false, message: "Invalid reCAPTCHA" });
@@ -102,6 +104,7 @@ const login = async (req, res) => {
       }
       res.status(500).json({ success: false, message: "An error occurred during login" });
   }
+  */
 };
 
 const checkAuth = async (req, res) => {
