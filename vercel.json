@@ -1,19 +1,19 @@
 {
-    "version": 2,
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/index.js" // Adjust this to point to your main server file
-        }
-    ],
-    "headers": [
-        {
-            "source": "/api/(.*)",
-            "headers": [
-                { "key": "Access-Control-Allow-Origin", "value": "https://sambag2.vercel.app" },
-                { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-                { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
-            ]
-        }
-    ]
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/index.js" // Adjust this to point to your main server file
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://sambag2.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
 }
