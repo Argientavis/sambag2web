@@ -16,13 +16,18 @@ app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
 
-// Base route for the API
+// Base route for the API (root)
 app.get("/", (req, res) => {
-  res.send("Hello, welcome to the API!");
+  res.send("Hello, welcome to the API!"); // Message when accessing /
 });
 
-// Auth routes (handled under /api)
+// Auth routes (under /api)
 app.use('/api', authRoutes);
+
+// Handle 404 for other routes
+app.use((req, res) => {
+  res.status(404).send("404: Not Found");
+});
 
 // Export the app as a serverless function for Vercel
 module.exports = (req, res) => {
