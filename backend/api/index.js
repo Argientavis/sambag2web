@@ -29,10 +29,7 @@ app.get("/login", (req, res) => {
 // Auth routes (under /api)
 app.use(authRoutes);
 
-// Handle 404 for other routes
-app.use((req, res) => {
-  res.status(404).send("404: Not Found");
-});
+
 
 // Export the app as a serverless function for Vercel
 module.exports = (req, res) => {
