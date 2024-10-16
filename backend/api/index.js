@@ -21,6 +21,11 @@ app.get("/", (req, res) => {
   res.send("Hello, welcome to the API!"); // Message when accessing /
 });
 
+app.get("/login", (req, res) => {
+  res.send("Hello, welcome to the API!"); // Message when accessing /
+});
+
+
 // Auth routes (under /api)
 app.use('/api', authRoutes);
 
