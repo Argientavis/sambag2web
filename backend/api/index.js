@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Use the auth routes under /api
-app.use("/api", authRoutes); // This maps /api/login to the login function
+app.use(authRoutes); // This maps /api/login to the login function
 
 // Export the app for Vercel's serverless functions
 module.exports = app;
