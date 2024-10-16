@@ -21,8 +21,7 @@ app.get("/", (req, res) => {
   res.send("Hello, welcome to the API!");
 });
 
-// Use the auth routes under /api
-app.use(authRoutes); // This maps /api/login to the login function
+app.use('/api', authRoutes);
 
 // Export the app as a serverless function for Vercel
 module.exports = (req, res) => {
