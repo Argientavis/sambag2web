@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 // Use the auth routes under /api
-app.use('/', authRoutes); // This maps /api/login to the login function
+app.use(authRoutes); // This maps /api/login to the login function
 
 // Export the app as a serverless function for Vercel
 module.exports = (req, res) => {
