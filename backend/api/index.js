@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Base route for the API
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Hello, welcome to the API!");
 });
 
