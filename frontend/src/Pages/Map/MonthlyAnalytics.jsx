@@ -1,159 +1,178 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import { database } from '../../Firebase';
 import { ref, get } from 'firebase/database';
 import AnalyticsComponent from '../../Components/AnalyticsComponent';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
+ChartJS.register(ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
 const MonthlyAnalytics = () => {
-  const [data, setData] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [totalReports, setTotalReports] = useState(0);
   const [resolvedReports, setResolvedReports] = useState(0);
   const [unresolvedReports, setUnresolvedReports] = useState(0);
-  const [severityStats, setSeverityStats] = useState({ high: 0, medium: 0, low: 0 });
-  const [reportStats, setReportStats] = useState({ fire: 0, theft: 0, noise: 0, accident: 0, others: 0 });
-  const [history,setHistory] = useState(null);
+  const [severityStats, setSeverityStats] = useState({});
 
-  // Fetch report data from History node based on the selected month and year
   const fetchData = async (month, year) => {
-    const historyRef = ref(database, 'History'); // Reference to the 'History' node
-  
+    const historyRef = ref(database, 'History');
     try {
       const historySnapshot = await get(historyRef);
       const historyData = historySnapshot.val();
-  
+
       if (historyData) {
         const historyList = Object.values(historyData);
-        let fireCount = 0, theftCount = 0, noiseCount = 0, accidentCount = 0, othersCount = 0;
+        let incidentCounts = { fire: 0, theft: 0, noise: 0, accident: 0, others: 0 };
         let totalCount = 0;
         let resolvedCount = 0;
         let unresolvedCount = 0;
-        let highSeverityCount = 0, mediumSeverityCount = 0, lowSeverityCount = 0;
-  
-        // Filter history reports by month and year
+
         historyList.forEach(report => {
           const reportDate = new Date(report.timestamp);
           if (reportDate.getMonth() === month && reportDate.getFullYear() === year) {
-            totalCount++;  // Count the total number of reports for the month
-  
-            // Count types of incidents
-            if (report.type === 'FIRE') fireCount++;
-            else if (report.type === 'CRIME OR THIEF') theftCount++;
-            else if (report.type === 'NOISE') noiseCount++;
-            else if (report.type === 'ACCIDENT') accidentCount++;
-            else othersCount++;  // Count for "OTHERS" if the type is not in the predefined categories
-  
-            // Count resolution status based on 'success' field
-            if (report.success === "Yes") {
-              resolvedCount++;  // Count as resolved if success is "Yes"
-            } else {
-              unresolvedCount++;  // Otherwise count as unresolved
-            }
-  
-            // Count incident severity
-            if (report.severity === 'HIGH') highSeverityCount++;
-            else if (report.severity === 'MEDIUM') mediumSeverityCount++;
-            else if (report.severity === 'LOW') lowSeverityCount++;
+            totalCount++;
+            if (report.type === 'FIRE') incidentCounts.fire++;
+            else if (report.type === 'CRIME OR THIEF') incidentCounts.theft++;
+            else if (report.type === 'NOISE') incidentCounts.noise++;
+            else if (report.type === 'ACCIDENT') incidentCounts.accident++;
+            else incidentCounts.others++;
+
+            if (report.success === "Yes") resolvedCount++;
+            else unresolvedCount++;
           }
         });
-  
-        // Update state with report statistics, including "OTHERS"
-        setReportStats({ fire: fireCount, theft: theftCount, noise: noiseCount, accident: accidentCount, others: othersCount });
+
+        setSeverityStats(incidentCounts);
         setTotalReports(totalCount);
         setResolvedReports(resolvedCount);
         setUnresolvedReports(unresolvedCount);
-        setSeverityStats({ high: highSeverityCount, medium: mediumSeverityCount, low: lowSeverityCount });
       }
     } catch (error) {
       console.error('Error fetching data', error);
     }
   };
 
-  // Fetch data when the component mounts or when the selected month/year changes
   useEffect(() => {
     fetchData(currentMonth, currentYear);
   }, [currentMonth, currentYear]);
 
-  // List of month names
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const getSeverityLabels = (incidentCounts) => {
+    const incidentArray = Object.entries(incidentCounts);
+    incidentArray.sort((a, b) => b[1] - a[1]); // Sort by count
 
-  // Handle month change event
-  const handleMonthChange = (event) => {
-    setCurrentMonth(parseInt(event.target.value, 10));
+    let severityLabels = { high: '', medium: '', low: '' };
+    if (incidentArray.length > 0) severityLabels.high = incidentArray[0][0]; // Highest report
+    if (incidentArray.length > 1) severityLabels.medium = incidentArray[1][0]; // Second highest
+    if (incidentArray.length > 2) severityLabels.low = incidentArray[2][0]; // Third highest
+
+    return severityLabels;
   };
 
-  // Adjust the colors dynamically based on the number of reports
-  const getSeverityColors = () => {
-    const { high, medium, low } = severityStats;
+  const severityLabels = getSeverityLabels(severityStats);
 
-    const highColor = high > 10 ? '#B20000' : '#FF0000';  // Darker red for many high reports
-    const mediumColor = medium > 10 ? '#FF6600' : '#FF8000';  // Darker orange for many medium reports
-    const lowColor = low > 10 ? '#FFE066' : '#FFFF66';  // Slightly darker yellow for many low reports
-
-    return [highColor, mediumColor, lowColor];
-  };
-
-  // Bar chart data now includes "OTHERS"
-  const barData = {
+  const pieData = {
     labels: ['Fire', 'Crime or Theft', 'Noise', 'Accident', 'Others'],
     datasets: [{
-      label: 'Total Reports',
-      data: [reportStats.fire, reportStats.theft, reportStats.noise, reportStats.accident, reportStats.others],
-      backgroundColor: [
-        '#FF6384',  // Fire
-        '#36A2EB',  // Crime or Theft
-        '#FFCE56',  // Noise
-        '#4BC0C0',  // Accident
-        '#FF9F40',  // Others
-      ],  // Different colors for each type
+      data: [
+        severityStats.fire || 0,
+        severityStats.theft || 0,
+        severityStats.noise || 0,
+        severityStats.accident || 0,
+        severityStats.others || 0
+      ],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'],
     }]
   };
 
-  const barOptions = {
+  const pieOptions1 = {
     responsive: true,
     maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
     plugins: {
       legend: {
+        display: true,
         position: 'top',
+        labels: { 
+          color: 'white',
+          generateLabels: (chart) => {
+            const data = chart.data.datasets[0].data;
+            const labels = chart.data.labels;
+            const colors = chart.data.datasets[0].backgroundColor;
+            
+            return data.map((value, index) => ({
+              text: `${labels[index]}`,
+              fillStyle: colors[index],
+              hidden: value === 0,
+              index,
+            }));
+          },
+        },
+      },
+      datalabels: {
+        color: 'white',
+        anchor: 'center',
+        align: 'center',
+        formatter: (value, context) => {
+          const total = context.chart._metasets[0].total;
+          const percentage = ((value / total) * 100).toFixed(0);
+          return `${percentage}%`;
+        },
+        font: { size: 12, weight: 'bold' },
       },
     },
   };
 
-  // Pie chart for resolution status based on fetched data
   const resolutionPieData = {
     labels: ['Resolved', 'Unresolved'],
     datasets: [{
       data: [resolvedReports, unresolvedReports],
-      backgroundColor: ['#4C0000', '#FF0000'],  // Dark red for resolved, bright red for unresolved
+      backgroundColor: ['#4CAF50', '#F44336'],
     }]
   };
 
-  // Pie chart for incident severity based on fetched data
   const severityPieData = {
-    labels: ['High (10+ Reports)', 'Medium (6-10 Reports)', 'Low (1-5 Reports)'],
-    datasets: [{
-      data: [severityStats.high, severityStats.medium, severityStats.low],
-      backgroundColor: getSeverityColors(),  // Dynamically generated colors based on report counts
-    }]
+    labels: ['Fire', 'Crime or Theft', 'Noise', 'Accident', 'Others'],
+    datasets: [ {
+      data: [severityStats.fire || 0, severityStats.theft || 0, severityStats.noise || 0, severityStats.accident || 0, severityStats.others || 0],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'],
+    } ]
   };
 
   const pieOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'right',
+        labels: {
+          color: 'white',
+          font: {
+            size: 12,
+            weight: 'bold',
+          },
+          boxWidth: 20,
+          padding: 15,
+          generateLabels: (chart) => {
+            const { high, medium, low } = severityLabels;
+            const colors = {
+              fire: '#FF6384',
+              theft: '#36A2EB',
+              noise: '#FFCE56',
+              accident: '#4BC0C0',
+              others: '#FF9F40',
+            };
+            return [
+              { text: `High: ${high}`, fillStyle: colors[high], fontColor: 'white' },
+              { text: `Medium: ${medium}`, fillStyle: colors[medium], fontColor: 'white' },
+              { text: `Low: ${low}`, fillStyle: colors[low], fontColor: 'white' },
+            ];
+          }
+        }
       },
       datalabels: {
         color: 'white',
+        font: { weight: 'bold', size: 9 },
         formatter: (value, context) => {
           const total = context.chart._metasets[0].total;
           const percentage = ((value / total) * 100).toFixed(0);
@@ -163,49 +182,57 @@ const MonthlyAnalytics = () => {
     },
   };
 
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const handleMonthChange = (event) => setCurrentMonth(parseInt(event.target.value, 10));
+
   return (
-    <div>
-      <AnalyticsComponent/>
-      <div className=" bg-[#F8F8F8] p-3">
-        <div className="flex items-center ml-4 mt-0 ">
-          <h1 className='text-2xl font-bold mr-4'>Monthly Report</h1>
-          <label htmlFor="month" className="text-lg mr-2">Select Month:</label>
-          <select
-            id="month"
-            value={currentMonth}
-            onChange={handleMonthChange}
-            className="border p-2 rounded"
-          >
-            {monthNames.map((month, index) => (
-              <option key={index} value={index}>{month}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="flex mt-8">
-          <div className="flex-1 pr-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-gray-500 mt-2 ml-4 font-bold">Reports for {monthNames[currentMonth]} {currentYear}</p>
-              <div className="w-full h-[500px] overflow-auto">
-                <Bar data={barData} options={barOptions} />
+    <div className="p-4">
+      <AnalyticsComponent />
+      <div className="container mx-auto">
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          <div className="flex-1 mb-4">
+            <h1 className='text-2xl font-bold'>Monthly Report</h1>
+            <div className="mt-2">
+              <label htmlFor="month" className="mr-2">Select Month:</label>
+              <select
+                id="month"
+                value={currentMonth}
+                onChange={handleMonthChange}
+                className="border p-2 rounded w-full md:w-auto"
+              >
+                {monthNames.map((month, index) => (
+                  <option key={index} value={index}>{month}</option>
+                ))}
+              </select>
+            </div>
+            <div className="bg-white mt-4 p-6 rounded-lg shadow-md">
+              <p className="text-gray-500 font-bold mb-1">Reports for {monthNames[currentMonth]} {currentYear}</p>
+              <div className="w-full h-64 md:h-80">
+                <Pie data={pieData} options={pieOptions1} />
               </div>
             </div>
           </div>
 
-          <div className="w-[350px] flex flex-col space-y-6">
-            <div className="bg-[#8A252C] text-white p-2 rounded-lg shadow-md text-center flex flex-col justify-center items-center w-[350px] h-[110px]">
-              <h2 className="text-sm font-bold tracking-wider">TOTAL OF REPORTS</h2>
-              <p className="text-6xl font-bold mt-2">{totalReports}</p>
+          <div className="flex flex-col space-y-4 lg:w-1/3 mt-4">
+            <div className="h-24 bg-[#8A252C] text-white p-2 rounded-lg shadow-md flex flex-col justify-center items-center">
+              <h2 className="text-sm font-bold">TOTAL OF REPORTS</h2>
+              <p className="text-4xl font-bold">{totalReports}</p>
             </div>
 
-            <div className="h-[200px] w-[300] bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-bold mb-4">Resolution Status</h2>
-              <Pie data={resolutionPieData} options={pieOptions} />
+            {/* Resolution Status Section */}
+            <div className="bg-white p-4 rounded-lg shadow-md flex-1">
+              <h2 className="text-md font-bold mb-2">Resolution Status</h2>
+              <div className="h-32 w-full">
+                <Pie data={resolutionPieData} options={{ responsive: true, maintainAspectRatio: false }} />
+              </div>
             </div>
 
-            <div className="h-[220px] bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-lg font-bold mb-4">Incident Severity</h2>
-              <Pie data={severityPieData} options={pieOptions} />
+            {/* Severity Status Section */}
+            <div className="bg-[#8A252C] p-4 rounded-lg shadow-md flex-1">
+              <h2 className="text-md font-bold mb-2 text-white">Severity Status</h2>
+              <div className="h-32 w-full">
+                <Pie data={severityPieData} options={pieOptions} />
+              </div>
             </div>
           </div>
         </div>
