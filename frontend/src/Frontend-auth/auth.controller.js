@@ -5,7 +5,7 @@ import { ref, get, query, orderByChild, equalTo } from "firebase/database";
 import axios from "axios";
 import { create } from "zustand";
 
-const API_URL = "https://sambag2-firebase.vercel.app/api";
+const API_URL = "https://sambag2-api-seven.vercel.app/api";
 
 export const useAuthStore = create((set) => ({
     user: null,
