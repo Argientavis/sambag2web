@@ -186,7 +186,7 @@ const MonthlyAnalytics = () => {
   const handleMonthChange = (event) => setCurrentMonth(parseInt(event.target.value, 10));
 
   return (
-    <div className="p-4">
+    <div>
       <AnalyticsComponent />
       <div className="container mx-auto">
         <div className="flex flex-col lg:flex-row items-start gap-6">
