@@ -59,62 +59,111 @@ export const useAuthStore = create((set) => ({
     forLogin: async (username, password, recaptchaToken) => {
         set({ error: null, isLoading: true });
         try {
+            // Check if the username exists in the database
             const usernameSnapshot = await get(
                 query(ref(database, "Users"), orderByChild("username"), equalTo(username))
             );
     
-            if (usernameSnapshot.exists()) {
-                const userData = usernameSnapshot.val();
-                const email = Object.values(userData)[0].email;
-    
-                const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-                const idToken = await userCredentials.user.getIdToken();
-               
-    
-                const response = await axios.post(`${API_URL}/login`, { idToken, recaptchaToken }, { withCredentials: true });
-    
-                if (response.data.success) {
-                    const role = Object.values(userData)[0].role;
-                    set({
-                        user: response.data.user,
-                        isAuthenticated: true,
-                        role,
-                        error: null,
-                        isLoading: false,
-                        isCheckingAuth: false
-                    });
-                    return { success: true, role, idToken };
-                } else {
-                    throw new Error(response.data.message || "Login failed");
-                }
-            } else {
+            if (!usernameSnapshot.exists()) {
                 throw new Error("Username does not exist");
             }
-        } catch (error) {
-            console.error("Error signing in:", error.response ? error.response.data : error.message);
-            let errorMessage = "An unknown error occurred";
     
-            if (error.code === "auth/missing-password") {
-                errorMessage = "Invalid password";
-            } else if (error.code === "auth/user-not-found") {
-                errorMessage = "User not found";
+            const userData = usernameSnapshot.val();
+            const email = Object.values(userData)[0].email;
+    
+            // Attempt to sign in with email and password
+            const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredentials.user.getIdToken();
+    
+            // Send the idToken and recaptchaToken to your API
+            const response = await axios.post(`${API_URL}/login`, { idToken, recaptchaToken }, { withCredentials: true });
+    
+            if (!response.data.success) {
+                throw new Error(response.data.message || "Login failed");
+            }
+    
+            const role = Object.values(userData)[0].role;
+            set({
+                user: response.data.user,
+                isAuthenticated: true,
+                role,
+                error: null,
+                isLoading: false,
+                isCheckingAuth: false
+            });
+            
+            return { success: true, role, idToken };
+    
+        } catch (error) {
+            // Detailed error logging
+            console.error("Error during login:", error.message);
+    
+            // Handle specific error cases
+            let errorMessage;
+            if (error.code) {
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = "User not found. Please check your credentials.";
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = "Incorrect password. Please try again.";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "Invalid email address.";
+                        break;
+                    default:
+                        errorMessage = error.message || "An unknown error occurred.";
+                }
+            } else {
+                errorMessage = error.message || "An unknown error occurred.";
             }
     
             set({ error: errorMessage, isLoading: false });
+            return { success: false, message: errorMessage };
         }
     },
     
-    signup: async (username, email, password, role) => {
+    signup: async (username, email, password, confirmPassword, role) => {
         set({ error: null, isLoading: true });
+        
+        // Validate the confirmation password
+        if (password !== confirmPassword) {
+            const errorMessage = "Password and confirmation password do not match.";
+            set({ error: errorMessage, isLoading: false });
+            return { success: false, error: errorMessage };
+        }
+    
         try {
+            // Check if username or email already exists
+            const usernameSnapshot = await get(
+                query(ref(database, "Users"), orderByChild("username"), equalTo(username))
+            );
+    
+            const emailSnapshot = await get(
+                query(ref(database, "Users"), orderByChild("email"), equalTo(email))
+            );
+    
+            if (usernameSnapshot.exists()) {
+                const errorMessage = "Username already exists.";
+                set({ error: errorMessage, isLoading: false });
+                return { success: false, error: errorMessage };
+            }
+    
+            if (emailSnapshot.exists()) {
+                const errorMessage = "Email already exists.";
+                set({ error: errorMessage, isLoading: false });
+                return { success: false, error: errorMessage };
+            }
+    
+            // Proceed with signup
             const response = await axios.post(`${API_URL}/signup`, { username, email, password, role });
-
+    
             if (response.data.success) {
                 return { success: true };
             } else {
                 throw new Error(response.data.message || "Signup failed");
             }
-
+    
         } catch (error) {
             console.error("Error signing up:", error.message);
             set({ error: error.response ? error.response.data : error.message, isLoading: false });

@@ -182,6 +182,9 @@ const Login = () => {
                           />
                         </div>
                       </div>
+                      {error &&(
+                        <p className="text-red-500">{error}</p>
+                      )}
                       <div className="text-[12px] flex justify-end">
                         <button 
                           onClick={(e) => { e.preventDefault(); setShowForgotPass(true); }} 

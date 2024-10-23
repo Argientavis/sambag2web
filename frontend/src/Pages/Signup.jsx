@@ -25,28 +25,38 @@ const Signup = () => {
     e.preventDefault();
     setError("");
 
+    // Validate required fields
     if (!username || !email || !password || !confirmPassword || !role) {
-      setError("All fields are required.");
-      return;
+        setError("All fields are required.");
+        return;
     }
 
+    // Validate password confirmation
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+        setError("Passwords do not match.");
+        return;
     }
 
     try {
-      await signup(username, email, password, role);
-      alert("Sign up successfully");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setRole("");
+        // Call the signup function
+        const result = await signup(username, email, password, confirmPassword, role);
+        
+        if (result.success) {
+            alert("Sign up successful!");
+            // Clear the form fields
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+            setRole("");
+        } else {
+            setError(result.error); // Display error message from signup function
+        }
     } catch (err) {
-      setError(err.message);
+        // Catch any unexpected errors
+        setError(err.message || "An unexpected error occurred.");
     }
-  };
+};
 
   return (
     <div className="overflow-hidden min-h-screen flex flex-col">
