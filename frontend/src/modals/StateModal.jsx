@@ -5,8 +5,9 @@ import { ref, onValue, update } from 'firebase/database';
 const StateModal = () => {
     const [state, setState] = useState(null);
     const [latestReport, setLatestReport] = useState(null);
-    const [locationDetails, setLocationDetails] = useState(null); // State for location details
+    const [locationDetails, setLocationDetails] = useState(null);
 
+    // Listen for changes in the state
     useEffect(() => {
         const stateRef = ref(database, 'led/state');
         const unsubscribe = onValue(stateRef, (snapshot) => {
@@ -17,50 +18,54 @@ const StateModal = () => {
         return () => unsubscribe();
     }, []);
 
+    // Listen for changes in reports
     useEffect(() => {
-        if (state > 0) {
-            const reportRef = ref(database, 'led/reports');
-            const unsubscribe = onValue(reportRef, (snapshot) => {
-                const reportData = snapshot.val();
-                if (reportData) {
-                    const reportValues = Object.values(reportData);
-                    const newReport = reportValues[reportValues.length - 1]; // Get the latest report
-                    setLatestReport(newReport);
+        const reportRef = ref(database, 'led/reports');
+        const unsubscribe = onValue(reportRef, (snapshot) => {
+            const reportData = snapshot.val();
+            if (reportData) {
+                const reportValues = Object.values(reportData);
+                const newReport = reportValues[reportValues.length - 1]; // Get the latest report
+                if (newReport && newReport.timestamp !== latestReport?.timestamp) {
+                    setLatestReport(newReport); // Update if it's a new report
                 }
-            });
+            }
+        });
 
-            return () => unsubscribe();
-        }
-    }, [state]);
+        return () => unsubscribe();
+    }, [latestReport]);
 
+    // Fetch location details based on the latest report
     useEffect(() => {
         if (latestReport) {
-            const { latitude, longitude } = parseLocation(latestReport.location); // Adjust based on your data structure
+            const { latitude, longitude } = parseLocation(latestReport.location);
             if (latitude && longitude) {
                 fetchLocationDetails(latitude, longitude);
             }
         }
     }, [latestReport]);
 
+    // Function to fetch location details from the API
     const fetchLocationDetails = async (lat, lon) => {
         try {
             const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=${"pk.247696ba66ee834343af9d1e99f35831"}&lat=${lat}&lon=${lon}&format=json`);
             const data = await response.json();
-            setLocationDetails(data); // Store location details
+            setLocationDetails(data);
         } catch (error) {
             console.error('Error fetching location details:', error);
         }
     };
 
+    // Function to parse location string to latitude and longitude
     const parseLocation = (location) => {
         const regex = /Latitude:\s*([0-9.-]+),\s*Longitude:\s*([0-9.-]+)/;
         const match = location.match(regex);
         return match ? { latitude: parseFloat(match[1]), longitude: parseFloat(match[2]) } : {};
     };
 
+    // Function to turn off the alarm and reset state
     const handleOffAlarm = async () => {
         const stateRef = ref(database, 'led');
-
         try {
             await update(stateRef, { state: 0 });
             setState(0);
@@ -85,9 +90,9 @@ const StateModal = () => {
                         </div>
                     )}
                     <div className='grid grid-cols-2 gap-3'>
-                    <p className='flex'>Type:&nbsp;<h5 className='font-serif'>{latestReport.type}</h5></p>
-                    <p className='flex'>Name:&nbsp;<h5 className='font-serif'>{latestReport.name}</h5></p>
-                    <p className='flex'>Contact:&nbsp;<h1 className='font-serif'>{latestReport.contact}</h1></p>
+                        <p className='flex'>Type:&nbsp;<h5 className='font-serif'>{latestReport.type}</h5></p>
+                        <p className='flex'>Name:&nbsp;<h5 className='font-serif'>{latestReport.name}</h5></p>
+                        <p className='flex'>Contact:&nbsp;<h1 className='font-serif'>{latestReport.contact}</h1></p>
                     </div>
                     <button onClick={handleOffAlarm} className='bg-[#8A252C] text-white rounded-md'>Off Alarm</button>
                 </div>
