@@ -70,15 +70,17 @@ const History = () => {
   }, []);
 
   // Filter data based on the selected year and date range
-  const filteredData = data.filter(item => {
+  const filteredData = data
+  .filter(item => {
     const itemDate = new Date(item.timestamp);
     const year = itemDate.getFullYear();
     const yearMatches = year.toString() === selectedYear;
     const startDateMatches = startDate ? itemDate >= new Date(startDate) : true;
     const endDateMatches = endDate ? itemDate <= new Date(endDate) : true;
-    
+
     return yearMatches && startDateMatches && endDateMatches;
-  });
+  })
+  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
 

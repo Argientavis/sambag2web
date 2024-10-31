@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./map.css"; // You can keep this if you have additional styles
+import "./map.css"; 
 import redIconUrl from "../assets/redicon.png";
 import greenIconUrl from "../assets/greenicon.png";
 import yellowIconUrl from "../assets/yellowicon.png";
@@ -11,6 +11,7 @@ import responded from "../assets/check.png";
 import notresponded from "../assets/deny.png";
 import { database } from "../Firebase";
 import { push, ref, remove } from "firebase/database";
+import noImg from '../assets/noImg.jpg';
 
 // Custom icons setup
 const redIcon = new L.Icon({
@@ -42,7 +43,9 @@ const Map = ({ selectedCoordinates, data }) => {
   const mapRef = useRef();
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [zoom, setZoom] = useState(false); // State for zoomed image
+  const [zoom, setZoom] = useState(false);
+  const [shouldFlyTo, setShouldFlyTo] = useState(true);
+  const markerRefs = useRef({});
 
   useEffect(() => {
     if (selectedCoordinates && mapRef.current) {
@@ -50,7 +53,7 @@ const Map = ({ selectedCoordinates, data }) => {
 
       if (latitude && longitude) {
         setSelectedMarker({ latitude, longitude });
-        mapRef.current.flyTo([latitude, longitude], 17);
+        setShouldFlyTo(true);
 
         const matchedReport = data.find((report) => {
           const location = parseLocation(report.location);
@@ -65,6 +68,19 @@ const Map = ({ selectedCoordinates, data }) => {
       }
     }
   }, [selectedCoordinates, data]);
+
+  useEffect(() => {
+    if (shouldFlyTo && selectedMarker) {
+      mapRef.current.flyTo([selectedMarker.latitude, selectedMarker.longitude], 17);
+      setShouldFlyTo(false);
+      
+      // Open the marker popup if it exists
+      const markerRef = markerRefs.current[selectedReport?.id];
+      if (markerRef) {
+        markerRef.openPopup();
+      }
+    }
+  }, [shouldFlyTo, selectedMarker, selectedReport]);
 
   const parseLocation = (location) => {
     const regex = /Latitude:\s*([0-9.-]+),\s*Longitude:\s*([0-9.-]+)/;
@@ -89,11 +105,9 @@ const Map = ({ selectedCoordinates, data }) => {
         location: selectedReport.location,
         timestamp: selectedReport.timestamp,
         success: success ? "Yes" : "No",
-        deviceId:selectedReport.deviceId,
-        imageUrl:selectedReport.imageUrl,
-        reportId:selectedReport.reportId
-
-
+        deviceId: selectedReport.deviceId,
+        imageUrl: selectedReport.imageUrl,
+        reportId: selectedReport.reportId,
       };
       await push(historyRef, dataToPush);
 
@@ -115,6 +129,10 @@ const Map = ({ selectedCoordinates, data }) => {
     );
   };
 
+  const getImageUrl = (url) => {
+    return url === "No image provided" ? noImg : url;
+  };
+
   return (
     <div className="relative w-full h-full">
       <MapContainer
@@ -128,7 +146,7 @@ const Map = ({ selectedCoordinates, data }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {data.map((report, index) => {
+        {data.map((report) => {
           const location = parseLocation(report.location);
           if (!location) return null;
 
@@ -146,16 +164,31 @@ const Map = ({ selectedCoordinates, data }) => {
 
           return (
             <Marker
-              key={index}
+              key={report.id}
               position={[location.latitude, location.longitude]}
               icon={markerIcon}
+              ref={(el) => { markerRefs.current[report.id] = el; }} // Store the reference to the marker
+              eventHandlers={{
+                click: () => {
+                  setSelectedMarker({ latitude: location.latitude, longitude: location.longitude });
+                  setSelectedReport(report);
+                  mapRef.current.flyTo([location.latitude, location.longitude], 17);
+                }
+              }}
             >
               <Popup>
                 <div>
                   <h4>Name: {report.name}</h4>
                   <h4>Type: {report.type}</h4>
                   <h4>Contact: {report.contact}</h4>
-                  <img className="w-full h-auto" src={report.imageUrl} alt="" />
+                  <div className="relative">
+                    <img
+                      onClick={() => setZoom(true)}
+                      className={`w-full h-40 object-cover cursor-pointer`}
+                      src={getImageUrl(report.imageUrl)}
+                      alt=""
+                    />
+                  </div>
                   <div className="flex justify-center gap-2 mt-4">
                     <img
                       onClick={() => handleSuccess(false)}
@@ -180,23 +213,21 @@ const Map = ({ selectedCoordinates, data }) => {
             key="selected-marker"
             position={[selectedMarker.latitude, selectedMarker.longitude]}
             icon={redIcon}
+            ref={(el) => { markerRefs.current[selectedReport.id] = el; }} // Store the reference to the selected marker
           >
             <Popup>
               <div>
                 <div>
-                  Clicked Coordinates: {selectedMarker.latitude},{" "}
-                  {selectedMarker.longitude}
+                  Clicked Coordinates: {selectedMarker.latitude}, {selectedMarker.longitude}
                 </div>
                 <h4>Name: {selectedReport.name}</h4>
                 <h4>Type: {selectedReport.type}</h4>
                 <h4>Contact: {selectedReport.contact}</h4>
                 <div className="relative">
                   <img
-                    onClick={() => setZoom(!zoom)}
-                    className={`w-full h-40 object-cover cursor-pointer ${
-                      zoom ? "hidden" : ""
-                    }`}
-                    src={selectedReport.imageUrl}
+                    onClick={() => setZoom(true)}
+                    className={`w-full h-40 object-fit cursor-pointer`}
+                    src={getImageUrl(selectedReport.imageUrl)}
                     alt=""
                   />
                 </div>
@@ -226,7 +257,7 @@ const Map = ({ selectedCoordinates, data }) => {
         >
           <img
             className="max-w-none max-h-none w-[30%] h-[100%] object-cover"
-            src={selectedReport.imageUrl}
+            src={getImageUrl(selectedReport.imageUrl)}
             alt=""
           />
         </div>
