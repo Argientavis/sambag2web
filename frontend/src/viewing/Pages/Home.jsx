@@ -30,7 +30,8 @@ import img from '../../assets/viewing/Homepage.jpg';
 import bgOfficials from '../../assets/viewing/bgofficials.png';
 import '../Pages/home.css'; 
 import leftArrowIcon from '../../assets/viewing/6.png'; 
-import rightArrowIcon from '../../assets/viewing/7.png'; 
+import rightArrowIcon from '../../assets/viewing/7.png';
+import dlqr from '../../assets/dlqr.jpg';
 
 const Home = () => {
   const homeRef = useRef(null);
@@ -117,9 +118,10 @@ const Home = () => {
       <div className='border border-[#E3BA2B] bg-[#E3BA2B] w-[calc(100%/10)] h-2'></div>
         <div className='text-white text-[65px] font-bold opacity-100'>BARANGAY SAMBAG 2</div>
         <span className='text-white text-[26px] font-bold px-1 -mt-4'>Urgello, Cebu City, Cebu</span>
-        <div className='text-white shadow-xl text-[17px] font-bold pt-1 pl-[5px]'>
-          <h3>“𝑺𝒕𝒓𝒊𝒗𝒊𝒏𝒈 𝒕𝒐𝒘𝒂𝒓𝒅𝒔 𝒄𝒐𝒏𝒕𝒊𝒏𝒖𝒂𝒍 𝒅𝒆𝒗𝒆𝒍𝒐𝒑𝒎𝒆𝒏𝒕 𝒇𝒐𝒓 𝒕𝒉𝒆 𝒈𝒓𝒆𝒂𝒕𝒆𝒓 𝒈𝒐𝒐𝒅 𝒐𝒇 𝒐𝒖𝒓 𝒄𝒐𝒎𝒎𝒖𝒏𝒊𝒕𝒚.”</h3>
-        </div>
+          <div className='text-white shadow-xl text-[17px] font-bold pt-1 pl-[5px]'>
+            <h3>“𝑺𝒕𝒓𝒊𝒗𝒊𝒏𝒈 𝒕𝒐𝒘𝒂𝒓𝒅𝒔 𝒄𝒐𝒏𝒕𝒊𝒏𝒖𝒂𝒍 𝒅𝒆𝒗𝒆𝒍𝒐𝒑𝒎𝒆𝒏𝒕 𝒇𝒐𝒓 𝒕𝒉𝒆 𝒈𝒓𝒆𝒂𝒕𝒆𝒓 𝒈𝒐𝒐𝒅 𝒐𝒇 𝒐𝒖𝒓 𝒄𝒐𝒎𝒎𝒖𝒏𝒊𝒕𝒚.”</h3>
+          </div>
+          <img src={dlqr} style={{height:'20rem', width:'20rem', position:'absolute', right:'100px', top:'170px'}} />
         <div className="flex justify-center items-center pt-32">
   <button onClick={scrollToAboutUs} className="flex items-center gap-2 bg-[#8A252C] text-white font-bold rounded-[5px] hover:bg-[#ffff]  hover:text-black hover:rounded-[5px] text-center py-2 px-5 text-[20px]">
     DISCOVER MORE
